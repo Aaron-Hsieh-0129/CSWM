@@ -47,8 +47,8 @@ CSWM::CSWM() {
      // calculate lon/lat, x/y, A
     for (int p = 0; p < 6; p++) {
         if (p == 0 || p == 1 || p == 2 || p == 3) {
-            for (int i = 1; i < NX-1; i++) {
-                for (int j = 1; j < NY-1; j++) {
+            for (int i = 0; i < NX; i++) {
+                for (int j = 0; j < NY; j++) {
                     // lon/lat
                     cswm[p].lon[i][j] = alpha2D[i][j] + p * M_PI / 2.;
                     cswm[p].lat[i][j] = atan(tan(beta2D[i][j]) * cos(alpha2D[i][j]));
@@ -72,8 +72,8 @@ CSWM::CSWM() {
         }
 
         if (p == 4) {
-            for (int i = 1; i < NX-1; i++) {
-                for (int j = 1; j < NY-1; j++) {
+            for (int i = 0; i < NX; i++) {
+                for (int j = 0; j < NY; j++) {
                     // lon/lat
                     cswm[p].lon[i][j] = atan2(tan(alpha2D[i][j]), -tan(beta2D[i][j]));
                     cswm[p].lat[i][j] = atan(1 / sqrt(pow(tan(alpha2D[i][j]), 2) + pow(tan(beta2D[i][j]), 2)));
@@ -97,8 +97,8 @@ CSWM::CSWM() {
         }
 
         if (p == 5) {
-            for (int i = 1; i < NX-1; i++) {
-                for (int j = 1; j < NY-1; j++) {
+            for (int i = 0; i < NX; i++) {
+                for (int j = 0; j < NY; j++) {
                     // lon/lat
                     cswm[p].lon[i][j] = atan2(tan(alpha2D[i][j]), tan(beta2D[i][j]));
                     cswm[p].lat[i][j] = -atan(1 / sqrt(pow(tan(alpha2D[i][j]), 2) + pow(tan(beta2D[i][j]), 2)));

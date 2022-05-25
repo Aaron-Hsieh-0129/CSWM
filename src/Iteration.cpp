@@ -24,12 +24,25 @@ void Iteration::ph_pt(CSWM &model) {
                 
                 model.cswm[p].hp[i][j] = model.cswm[p].hm[i][j] + D2T * (-psqrtGHU_px - psqrtGHU_py);
 
-                // TODO: diffusion
+                // diffusion
+                #ifdef DIFFUSION
+                    model.cswm[p].hp[i][j] += D2T * Kx * (model.cswm[p].hm[i+1][j] - 2. * model.cswm[p].hm[i][j] + model.cswm[p].hm[i-1][j]) / pow((model.cswm[p].x[i+1][j] - model.cswm[p].x[i][j]), 2) + 
+                                        D2T * Ky  * (model.cswm[p].hm[i][j+1] - 2. * model.cswm[p].hm[i][j] + model.cswm[p].hm[i][j-1]) / pow((model.cswm[p].y[i][j+1] - model.cswm[p].y[i][j]), 2);
+			    #endif
             }
         }
     }
 
-    // TODO: Time filter
+    // Time filter
+    #ifdef TIMEFILTER
+        for (int p = 0; p < 6; p++) {
+            for (int i = 1; i < NX-1; i++) {
+                for (int j = 1; j < NY-1; j++) {
+                    model.cswm[p].h[i][j] += TIMETS * (model.cswm[p].hp[i][j] - 2 * model.cswm[p].h[i][j] + model.cswm[p].hm[i][j]);
+                }
+            }
+        }
+    #endif
 }
 
 void Iteration::pu_pt(CSWM &model) {
@@ -97,6 +110,7 @@ void Iteration::pv_pt(CSWM &model) {
 
 
 void Iteration::Leapfrog(CSWM &model) {
+    Output::output_parameter(model);
     int n = 0;
     double timenow = 0.;
     double temp = TIMEEND / DT;
@@ -105,13 +119,20 @@ void Iteration::Leapfrog(CSWM &model) {
         std::cout << n << std::endl;
 
         // TODO: OUTPUT file
+        if (n % OUTPUTINTERVAL == 0) {
+            Output::output_h(n, model);
+            Output::output_u(n, model);
+            Output::output_v(n, model);
+        }
+        // break;
+
         n++;
         timenow = n * DT;
 
         // calculate
         ph_pt(model);
-        pu_pt(model);
-        pv_pt(model);
+        // pu_pt(model);
+        // pv_pt(model);
         model.BoundaryProcess(model);
 
         // next step

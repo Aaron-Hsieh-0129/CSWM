@@ -6,7 +6,7 @@ class Init {
         static void Init2d(CSWM &);
 
     private:
-        double GetH(int, int);
-        double GetU(int, int);
-        double GetV(int);
+        static double GetH(double, double);
+        static double GetU(double, double);
+        static double GetV(double);
 };
