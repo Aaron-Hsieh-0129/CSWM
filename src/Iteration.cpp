@@ -1,11 +1,14 @@
 #include "Iteration.hpp"
 
 void Iteration::ph_pt(CSWM &model) {
-    double psqrtGHU_px, psqrtGHU_py;
+    double psqrtGHU_px, psqrtGHU_py, dx_for_h, dy_for_h;
     for (int p = 0; p < 6; p++) {
         for (int i = 1; i < NX-1; i++) {
             for (int j = 1; j < NY-1; j++) {
-                psqrtGHU_px = (0.125 / (model.sqrtG[i][j] * (model.cswm[p].x[i+1][j] - model.cswm[p].x[i][j]))) * 
+                dx_for_h = 0.5 * (model.cswm[p].x[i+1][j] - model.cswm[p].x[i-1][j]);
+                dy_for_h = 0.5 * (model.cswm[p].y[i][j+1] - model.cswm[p].y[i][j-1]);
+
+                psqrtGHU_px = (0.125 / (model.sqrtG[i][j] * dx_for_h)) * 
                               (((model.sqrtG[i+1][j]+model.sqrtG[i][j]) * (model.cswm[p].h[i+1][j]+model.cswm[p].h[i][j]) * 
                                 ((model.gUpper[i+1][j][0]+model.gUpper[i][j][0]) * model.cswm[p].u[i+1][j] + 
                                   0.25 * (model.gUpper[i+1][j][1]+model.gUpper[i][j][1]) * (model.cswm[p].v[i+1][j+1]+model.cswm[p].v[i][j+1]+model.cswm[p].v[i+1][j]+model.cswm[p].v[i][j]))) - 
@@ -13,7 +16,7 @@ void Iteration::ph_pt(CSWM &model) {
                                 ((model.gUpper[i][j][0]+model.gUpper[i-1][j][0]) * model.cswm[p].u[i][j] + 
                                   0.25 * (model.gUpper[i][j][1]+model.gUpper[i-1][j][1]) * (model.cswm[p].v[i][j+1]+model.cswm[p].v[i][j]+model.cswm[p].v[i-1][j+1]+model.cswm[p].v[i-1][j]))));
 
-                psqrtGHU_py = (0.125 / (model.sqrtG[i][j] * (model.cswm[p].y[i][j+1] - model.cswm[p].y[i][j]))) * 
+                psqrtGHU_py = (0.125 / (model.sqrtG[i][j] * dy_for_h)) * 
                               (((model.sqrtG[i][j+1]+model.sqrtG[i][j]) * (model.cswm[p].h[i][j+1]+model.cswm[p].h[i][j]) * 
                                 ((model.gUpper[i][j+1][3]+model.gUpper[i][j][3]) * model.cswm[p].v[i][j+1] + 
                                   0.25 * (model.gUpper[i][j+1][2]+model.gUpper[i][j][2]) * (model.cswm[p].u[i+1][j+1]+model.cswm[p].u[i][j+1]+model.cswm[p].u[i+1][j]+model.cswm[p].u[i][j]))) - 
@@ -22,7 +25,9 @@ void Iteration::ph_pt(CSWM &model) {
                                   0.25 * (model.gUpper[i][j][2]+model.gUpper[i][j-1][2]) * (model.cswm[p].u[i+1][j]+model.cswm[p].u[i][j]+model.cswm[p].u[i+1][j-1]+model.cswm[p].u[i][j-1]))));
 
                 
-                model.cswm[p].hp[i][j] = model.cswm[p].hm[i][j] + D2T * (-psqrtGHU_px - psqrtGHU_py);
+                // model.cswm[p].hp[i][j] = model.cswm[p].hm[i][j] + D2T * (-psqrtGHU_px - psqrtGHU_py);
+                // model.cswm[p].hp[i][j] = model.cswm[p].hm[i][j] + D2T * (-psqrtGHU_px);
+                model.cswm[p].hp[i][j] = model.cswm[p].hm[i][j] + D2T * (-psqrtGHU_py);
 
                 // diffusion
                 #ifdef DIFFUSION
@@ -43,6 +48,7 @@ void Iteration::ph_pt(CSWM &model) {
             }
         }
     #endif
+    return;
 }
 
 void Iteration::pu_pt(CSWM &model) {
@@ -137,8 +143,8 @@ void Iteration::Leapfrog(CSWM &model) {
 
         // next step
         for (int p = 0; p < 6; p++) {
-            for (int i = 0; i < NX-1; i++) {
-                for (int j = 0; j < NY-1; j++) {
+            for (int i = 0; i < NX; i++) {
+                for (int j = 0; j < NY; j++) {
                     model.cswm[p].hm[i][j] = model.cswm[p].h[i][j];
                     model.cswm[p].h[i][j] = model.cswm[p].hp[i][j];
 

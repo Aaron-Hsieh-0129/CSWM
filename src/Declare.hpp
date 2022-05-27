@@ -22,4 +22,8 @@ class CSWM {
         patch cswm[6];
         double sqrtG[NX][NY], gamma[NX][NY], gLower[NX][NY][4], gUpper[NX][NY][4];
         static void BoundaryProcess(CSWM &);
+        static double Interpolate(double A1, double A2, double y1, double y2, double B);
+        static double Interpolate4lat(double A1, double A2, double y1, double y2, double B);
+        static void TransformCoordinate(CSWM &);
+        static void ConvertPatch2Sphere(CSWM &, int, int, int);
 };

@@ -29,4 +29,4 @@ Iteration.o	: src/Iteration.cpp
 clean:
 		rm -rf *.o bin/*
 		rm -rf outputs/h/* outputs/u/* outputs/v/*
-		rm -rf graphs/h/* graphs/u/* graphs/v/* graphs/test/h_1/* graphs/test/h_2/*
+		rm -rf graphs/h/* graphs/u/* graphs/v/* graphs/test/h_1/* graphs/test/h_2/* graphs/test/h/*

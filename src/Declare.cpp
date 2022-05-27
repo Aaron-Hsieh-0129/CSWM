@@ -124,142 +124,515 @@ CSWM::CSWM() {
 }
 
 // TODO: Interpolation
+/*
+void CSWM::BoundaryProcess(CSWM &model) {
+    // patch 1
+    for (int idx = 1; idx < NX-1; idx++) {
+        // left
+        if (idx < NX / 2) {
+            model.cswm[0].hp[0][idx] = Interpolate4lat(model.cswm[3].lat[NX-2][idx], model.cswm[3].lat[NX-2][idx+1], model.cswm[3].hp[NX-2][idx], model.cswm[3].hp[NX-2][idx+1], model.cswm[0].lat[0][idx]);
+        }
+        else if (idx == NX / 2) {
+            model.cswm[0].hp[0][idx] = model.cswm[3].hp[NX-2][idx];
+        }
+        else {
+            model.cswm[0].hp[0][idx] = Interpolate4lat(model.cswm[3].lat[NX-2][idx-1], model.cswm[3].lat[NX-2][idx], model.cswm[3].hp[NX-2][idx-1], model.cswm[3].hp[NX-2][idx], model.cswm[0].lat[0][idx]);
+        }
+        // model.cswm[0].up[0][idx] = model.cswm[3].up[NX-2][idx];
+        // model.cswm[0].vp[0][idx] = model.cswm[3].vp[NX-2][idx];
+
+        // right
+        if (idx < NX / 2) {
+            model.cswm[0].hp[NX-1][idx] = Interpolate4lat(model.cswm[1].lat[1][idx], model.cswm[1].lat[1][idx+1], model.cswm[1].hp[1][idx], model.cswm[1].hp[1][idx+1], model.cswm[1].lat[0][idx]);
+        }
+        else if (idx == NX / 2) {
+            model.cswm[0].hp[NX-1][idx] = model.cswm[1].hp[1][idx];
+        }
+        else {
+            model.cswm[0].hp[NX-1][idx] = Interpolate4lat(model.cswm[1].lat[1][idx-1], model.cswm[1].lat[1][idx], model.cswm[1].hp[1][idx-1], model.cswm[1].hp[1][idx], model.cswm[1].lat[0][idx]);
+        }
+        // model.cswm[0].up[NX-1][idx] = model.cswm[1].up[1][idx];
+        // model.cswm[0].vp[NX-1][idx] = model.cswm[1].vp[1][idx];
+
+        // up
+        if (idx < NX / 2) {
+            model.cswm[0].hp[idx][NY-1] = Interpolate(model.cswm[4].lon[idx][1], model.cswm[4].lon[idx+1][1], model.cswm[4].hp[idx][1], model.cswm[4].hp[idx+1][1], model.cswm[0].lon[idx][NY-1]);
+        }
+        else if (idx == NX / 2) {
+            model.cswm[0].hp[idx][NY-1] = model.cswm[4].hp[idx][1];
+        }
+        else {
+            model.cswm[0].hp[idx][NY-1] = Interpolate(model.cswm[4].lon[idx-1][1], model.cswm[4].lon[idx][1], model.cswm[4].hp[idx-1][1], model.cswm[4].hp[idx][1], model.cswm[0].lon[idx][NY-1]);
+        }
+        // model.cswm[0].up[idx][NY-1] = model.cswm[4].up[idx][1];
+        // model.cswm[0].vp[idx][NY-1] = model.cswm[4].vp[idx][1];
+
+        // bottom
+        if (idx < NX / 2) {
+            model.cswm[0].hp[idx][0] = Interpolate(model.cswm[5].lon[idx][NY-2], model.cswm[5].lon[idx+1][NY-2], model.cswm[5].hp[idx][NY-2], model.cswm[5].hp[idx+1][NY-2], model.cswm[0].lon[idx][0]);
+        }
+        else if (idx == NX / 2) {
+            model.cswm[0].hp[idx][0] = model.cswm[5].hp[idx][NY-2];
+        }
+        else {
+            model.cswm[0].hp[idx][0] = Interpolate(model.cswm[5].lon[idx-1][NY-2], model.cswm[5].lon[idx][NY-2], model.cswm[5].hp[idx-1][NY-2], model.cswm[5].hp[idx][NY-2], model.cswm[0].lon[idx][0]);
+        }
+        // model.cswm[0].up[idx][0] = model.cswm[5].up[idx][NY-2];
+        // model.cswm[0].vp[idx][0] = model.cswm[5].vp[idx][NY-2];
+        
+    }
+
+    // patch 2
+    for (int idx = 1; idx < NX-1; idx++) {
+        // left
+        if (idx < NX / 2) {
+            model.cswm[1].hp[0][idx] = Interpolate(model.cswm[0].lat[NX-2][idx], model.cswm[0].lat[NX-2][idx+1], model.cswm[0].hp[NX-2][idx], model.cswm[0].hp[NX-2][idx+1], model.cswm[1].lat[0][idx]);
+        }
+        else if (idx == NX / 2) {
+            model.cswm[1].hp[0][idx] = model.cswm[0].hp[NX-2][idx];
+        }
+        else {
+            model.cswm[1].hp[0][idx] = Interpolate(model.cswm[0].lat[NX-2][idx-1], model.cswm[0].lat[NX-2][idx], model.cswm[0].hp[NX-2][idx-1], model.cswm[0].hp[NX-2][idx], model.cswm[1].lat[0][idx]);
+        }
+        // model.cswm[1].up[0][idx] = model.cswm[0].up[NX-2][idx];
+        // model.cswm[1].vp[0][idx] = model.cswm[0].vp[NX-2][idx];
+
+        // right
+        if (idx < NX / 2) {
+            model.cswm[1].hp[NX-1][idx] = Interpolate(model.cswm[2].lat[1][idx], model.cswm[2].lat[1][idx+1], model.cswm[2].hp[1][idx], model.cswm[2].hp[1][idx+1], model.cswm[1].lat[0][idx]);
+        }
+        else if (idx == NX / 2) {
+            model.cswm[1].hp[NX-1][idx] = model.cswm[2].hp[1][idx];
+        }
+        else {
+            model.cswm[1].hp[NX-1][idx] = Interpolate(model.cswm[2].lat[1][idx-1], model.cswm[2].lat[1][idx], model.cswm[2].hp[1][idx-1], model.cswm[2].hp[1][idx], model.cswm[1].lat[0][idx]);
+        }
+        // model.cswm[1].up[NX-1][idx] = model.cswm[2].up[1][idx];
+        // model.cswm[1].vp[NX-1][idx] = model.cswm[2].vp[1][idx];
+
+        // up
+        if (idx < NX / 2) {
+            model.cswm[1].hp[idx][NY-1] = Interpolate(model.cswm[4].lon[NX-2][idx], model.cswm[4].lon[NX-2][idx+1], model.cswm[4].hp[NX-2][idx], model.cswm[4].hp[NX-2][idx+1], model.cswm[1].lon[idx][NY-1]);
+        }
+        else if (idx == NX / 2) {
+            model.cswm[1].hp[idx][NY-1] = model.cswm[4].hp[NX-2][idx];
+        }
+        else {
+            model.cswm[1].hp[idx][NY-1] = Interpolate(model.cswm[4].lon[NX-2][idx-1], model.cswm[4].lon[NX-2][idx], model.cswm[4].hp[NX-2][idx-1], model.cswm[4].hp[NX-2][idx], model.cswm[1].lon[idx][NY-1]);
+        }
+        // model.cswm[1].up[idx][NY-1] = model.cswm[4].vp[NX-2][idx];
+        // model.cswm[1].vp[idx][NY-1] = -model.cswm[4].up[NX-2][idx];
+
+        // bottom
+        if (idx < NX / 2) {
+            model.cswm[1].hp[idx][0] = Interpolate(model.cswm[5].lon[NX-2][(NY-1)-idx], model.cswm[5].lon[NX-2][(NY-1)-idx-1], model.cswm[5].hp[NX-2][(NY-1)-idx], model.cswm[5].hp[NX-2][(NY-1)-idx-1], model.cswm[1].lon[idx][0]);
+        }
+        else if (idx == NX / 2) {
+            model.cswm[1].hp[idx][0] = model.cswm[5].hp[NX-2][(NY-1)-idx];
+        }
+        else {
+            model.cswm[1].hp[idx][0] = Interpolate(model.cswm[5].lon[NX-2][(NY-1)-idx+1], model.cswm[5].lon[NX-2][(NY-1)-idx], model.cswm[5].hp[NX-2][(NY-1)-idx+1], model.cswm[5].hp[NX-2][(NY-1)-idx], model.cswm[1].lon[idx][0]);
+        }
+        // model.cswm[1].up[idx][0] = -model.cswm[5].vp[NX-2][(NY-1)-idx];
+        // model.cswm[1].vp[idx][0] = model.cswm[5].up[NX-2][(NY-1)-idx];
+        
+    }
+
+    // patch 3
+    for (int idx = 1; idx < NX-1; idx++) {
+        // left
+        if (idx < NX / 2) {
+            model.cswm[2].hp[0][idx] = Interpolate(model.cswm[1].lat[NX-2][idx], model.cswm[1].lat[NX-2][idx+1], model.cswm[1].hp[NX-2][idx], model.cswm[1].hp[NX-2][idx+1], model.cswm[2].lat[0][idx]);
+        }
+        else if (idx == NX / 2) {
+            model.cswm[2].hp[0][idx] = model.cswm[1].hp[NX-2][idx];
+        }
+        else {
+            model.cswm[2].hp[0][idx] = Interpolate(model.cswm[1].lat[NX-2][idx-1], model.cswm[1].lat[NX-2][idx], model.cswm[1].hp[NX-2][idx-1], model.cswm[1].hp[NX-2][idx], model.cswm[2].lat[0][idx]);
+        }
+        // model.cswm[2].up[0][idx] = model.cswm[1].up[NX-2][idx];
+        // model.cswm[2].vp[0][idx] = model.cswm[1].vp[NX-2][idx];
+
+        // right
+        if (idx < NX / 2) {
+            model.cswm[2].hp[NX-1][idx] = Interpolate(model.cswm[3].lat[1][idx], model.cswm[3].lat[1][idx+1], model.cswm[3].hp[1][idx], model.cswm[3].hp[1][idx+1], model.cswm[2].lat[0][idx]);
+        }
+        else if (idx == NX / 2) {
+            model.cswm[2].hp[NX-1][idx] = model.cswm[3].hp[1][idx];
+        }
+        else {
+            model.cswm[2].hp[NX-1][idx] = Interpolate(model.cswm[3].lat[1][idx-1], model.cswm[3].lat[1][idx], model.cswm[3].hp[1][idx-1], model.cswm[3].hp[1][idx], model.cswm[2].lat[0][idx]);
+        }
+        // model.cswm[2].up[NX-1][idx] = model.cswm[3].up[1][idx];
+        // model.cswm[2].vp[NX-1][idx] = model.cswm[3].vp[1][idx];
+
+        // up
+        if (idx < NX / 2) {
+            model.cswm[2].hp[idx][NY-1] = Interpolate(model.cswm[4].lon[(NX-1)-idx][NY-2], model.cswm[4].lon[(NX-1)-idx-1][NY-2], model.cswm[4].hp[(NX-1)-idx][NY-2], model.cswm[4].hp[(NX-1)-idx-1][NY-2], model.cswm[2].lon[idx][NY-1]);
+        }
+        else if (idx == NX / 2) {
+            model.cswm[2].hp[idx][NY-1] = model.cswm[4].hp[(NX-1)-idx][NY-2];
+        }
+        else {
+            model.cswm[2].hp[idx][NY-1] = Interpolate(model.cswm[4].lon[(NX-1)-idx+1][NY-2], model.cswm[4].lon[(NX-1)-idx][NY-2], model.cswm[4].hp[(NX-1)-idx+1][NY-2], model.cswm[4].hp[(NX-1)-idx][NY-2], model.cswm[2].lon[idx][NY-1]);
+        }
+        // model.cswm[2].up[idx][NY-1] = -model.cswm[4].up[(NX-1)-idx][NY-2];
+        // model.cswm[2].vp[idx][NY-1] = -model.cswm[4].vp[(NX-1)-idx][NY-2];
+
+        // bottom
+        if (idx < NX / 2) {
+            model.cswm[2].hp[idx][0] = Interpolate(model.cswm[5].lon[(NX-1)-idx][1], model.cswm[5].lon[(NX-1)-idx-1][1], model.cswm[5].hp[(NX-1)-idx][1], model.cswm[5].hp[(NX-1)-idx-1][1], model.cswm[2].lon[idx][0]);
+        }
+        else if (idx == NX / 2) {
+            model.cswm[2].hp[idx][0] = model.cswm[5].hp[(NX-1)-idx][1];
+        }
+        else {
+            model.cswm[2].hp[idx][0] = Interpolate(model.cswm[5].lon[(NX-1)-idx+1][1], model.cswm[5].lon[(NX-1)-idx][1], model.cswm[5].hp[(NX-1)-idx+1][1], model.cswm[5].hp[(NX-1)-idx][1], model.cswm[2].lon[idx][0]);
+        }
+        // model.cswm[2].up[idx][0] = -model.cswm[5].up[(NX-1)-idx][1];
+        // model.cswm[2].vp[idx][0] = -model.cswm[5].vp[(NX-1)-idx][1];
+        
+    }
+
+    // patch 4
+    for (int idx = 1; idx < NX-1; idx++) {
+        // left
+        if (idx < NX / 2) {
+            model.cswm[3].hp[0][idx] = Interpolate(model.cswm[2].lat[NX-2][idx], model.cswm[2].lat[NX-2][idx+1], model.cswm[2].hp[NX-2][idx], model.cswm[2].hp[NX-2][idx+1], model.cswm[3].lat[0][idx]);
+        }
+        else if (idx == NX / 2) {
+            model.cswm[3].hp[0][idx] = model.cswm[2].hp[NX-2][idx];
+        }
+        else {
+            model.cswm[3].hp[0][idx] = Interpolate(model.cswm[2].lat[NX-2][idx-1], model.cswm[2].lat[NX-2][idx], model.cswm[2].hp[NX-2][idx-1], model.cswm[2].hp[NX-2][idx], model.cswm[3].lat[0][idx]);
+        }
+        // model.cswm[3].up[0][idx] = model.cswm[2].up[NX-2][idx];
+        // model.cswm[3].vp[0][idx] = model.cswm[2].vp[NX-2][idx];
+
+        // right
+        if (idx < NX / 2) {
+            model.cswm[3].hp[NX-1][idx] = Interpolate(model.cswm[0].lat[1][idx], model.cswm[0].lat[1][idx+1], model.cswm[0].hp[1][idx], model.cswm[0].hp[1][idx+1], model.cswm[3].lat[0][idx]);
+        }
+        else if (idx == NX / 2) {
+            model.cswm[3].hp[NX-1][idx] = model.cswm[0].hp[1][idx];
+        }
+        else {
+            model.cswm[3].hp[NX-1][idx] = Interpolate(model.cswm[0].lat[1][idx-1], model.cswm[0].lat[1][idx], model.cswm[0].hp[1][idx-1], model.cswm[0].hp[1][idx], model.cswm[3].lat[0][idx]);
+        }
+        // model.cswm[3].up[NX-1][idx] = model.cswm[0].up[1][idx];
+        // model.cswm[3].vp[NX-1][idx] = model.cswm[0].vp[1][idx];
+
+        // up
+        if (idx < NX / 2) {
+            model.cswm[3].hp[idx][NY-1] = Interpolate(model.cswm[4].lon[1][(NY-1)-idx], model.cswm[4].lon[1][(NY-1)-idx-1], model.cswm[4].hp[1][(NY-1)-idx], model.cswm[4].hp[1][(NY-1)-idx-1], model.cswm[3].lon[idx][NY-1]);
+        }
+        else if (idx == NX / 2) {
+            model.cswm[3].hp[idx][NY-1] = model.cswm[4].hp[1][(NY-1)-idx];
+        }
+        else {
+            model.cswm[3].hp[idx][NY-1] = Interpolate(model.cswm[4].lon[1][(NY-1)-idx+1], model.cswm[4].lon[1][(NY-1)-idx], model.cswm[4].hp[1][(NY-1)-idx+1], model.cswm[4].hp[1][(NY-1)-idx], model.cswm[3].lon[idx][NY-1]);
+        }
+        // model.cswm[3].up[idx][NY-1] = -model.cswm[4].vp[1][(NY-1)-idx];
+        // model.cswm[3].vp[idx][NY-1] = model.cswm[4].up[1][(NY-1)-idx];
+
+        // bottom
+        if (idx < NX / 2) {
+            model.cswm[3].hp[idx][0] = Interpolate(model.cswm[5].lon[1][idx], model.cswm[5].lon[1][idx+1], model.cswm[5].hp[1][idx], model.cswm[5].hp[1][idx+1], model.cswm[3].lon[idx][0]);
+        }
+        else if (idx == NX / 2) {
+            model.cswm[3].hp[idx][0] = model.cswm[5].hp[1][idx];
+        }
+        else {
+            model.cswm[3].hp[idx][0] = Interpolate(model.cswm[5].lon[1][idx-1], model.cswm[5].lon[1][idx], model.cswm[5].hp[1][idx-1], model.cswm[5].hp[1][idx], model.cswm[3].lon[idx][0]);
+        }
+
+        // model.cswm[3].up[idx][0] = model.cswm[5].vp[1][idx];
+        // model.cswm[3].vp[idx][0] = -model.cswm[5].up[1][idx];
+        
+    }
+
+    // patch 5
+    
+    for (int idx = 1; idx < NX-1; idx++) {
+        // left
+        if (idx < NX / 2) {
+            model.cswm[4].hp[0][idx] = Interpolate(model.cswm[3].lon[(NX-1)-idx][NY-2], model.cswm[3].lon[(NX-1)-idx-1][NY-2], model.cswm[3].hp[(NX-1)-idx][NY-2], model.cswm[3].hp[(NX-1)-idx-1][NY-2], model.cswm[4].lon[idx][0]);
+        }
+        else if (idx == NX / 2) {
+            model.cswm[4].hp[0][idx] = model.cswm[3].hp[(NX-1)-idx][NY-2];
+        }
+        else {
+            model.cswm[4].hp[0][idx] = Interpolate(model.cswm[3].lon[(NX-1)-idx+1][NY-2], model.cswm[3].lon[(NX-1)-idx][NY-2], model.cswm[3].hp[(NX-1)-idx+1][NY-2], model.cswm[3].hp[(NX-1)-idx][NY-2], model.cswm[4].lon[idx][0]);
+        }
+        // model.cswm[4].up[0][idx] = model.cswm[3].vp[(NX-1)-idx][NY-2];
+        // model.cswm[4].vp[0][idx] = -model.cswm[3].up[(NX-1)-idx][NY-2];
+
+        // right
+        if (idx < NX / 2) {
+            model.cswm[4].hp[NX-1][idx] = Interpolate(model.cswm[1].lon[idx][NY-2], model.cswm[1].lon[idx+1][NY-2], model.cswm[1].hp[idx][NY-2], model.cswm[1].hp[idx+1][NY-2], model.cswm[4].lon[idx][NY-1]);
+        }
+        else if (idx == NX / 2) {
+            model.cswm[4].hp[NX-1][idx] = model.cswm[1].hp[idx][NY-2];
+        }
+        else {
+            model.cswm[4].hp[NX-1][idx] = Interpolate(model.cswm[1].lon[idx-1][NY-2], model.cswm[1].lon[idx][NY-2], model.cswm[1].hp[idx-1][NY-2], model.cswm[1].hp[idx][NY-2], model.cswm[4].lon[idx][NY-1]);
+        }
+        // model.cswm[4].up[NX-1][idx] = -model.cswm[1].vp[idx][NY-2];
+        // model.cswm[4].vp[NX-1][idx] = model.cswm[1].up[idx][NY-2];
+
+        // up
+        if (idx < NX / 2) {
+            model.cswm[4].hp[idx][NY-1] = Interpolate(model.cswm[2].lon[(NX-1)-idx][NY-2], model.cswm[2].lon[(NX-1)-idx-1][NY-2], model.cswm[2].hp[(NX-1)-idx][NY-2], model.cswm[2].hp[(NX-1)-idx-1][NY-2], model.cswm[4].lon[idx][NY-1]);
+        }
+        else if (idx == NX / 2) {
+            model.cswm[4].hp[idx][NY-1] = model.cswm[2].hp[(NX-1)-idx][NY-2];
+        }
+        else {
+            model.cswm[4].hp[idx][NY-1] = Interpolate(model.cswm[2].lon[(NX-1)-idx+1][NY-2], model.cswm[2].lon[(NX-1)-idx][NY-2], model.cswm[2].hp[(NX-1)-idx+1][NY-2], model.cswm[2].hp[(NX-1)-idx][NY-2], model.cswm[4].lon[idx][NY-1]);
+        }
+        // model.cswm[4].up[idx][NY-1] = -model.cswm[2].up[(NX-1)-idx][NY-2];
+        // model.cswm[4].vp[idx][NY-1] = -model.cswm[2].vp[(NX-1)-idx][NY-2];
+
+        // bottom
+        if (idx < NX / 2) {
+            model.cswm[4].hp[idx][0] = Interpolate(model.cswm[0].lon[idx][NY-2], model.cswm[0].lon[idx+1][NY-2], model.cswm[0].hp[idx][NY-2], model.cswm[0].hp[idx+1][NY-2], model.cswm[4].lon[idx][0]);
+        }
+        else if (idx == NX / 2) {
+            model.cswm[4].hp[idx][0] = model.cswm[0].hp[idx][NY-2];
+        }
+        else {
+            model.cswm[4].hp[idx][0] = Interpolate(model.cswm[0].lon[idx-1][NY-2], model.cswm[0].lon[idx][NY-2], model.cswm[0].hp[idx-1][NY-2], model.cswm[0].hp[idx][NY-2], model.cswm[4].lon[idx][0]);
+        }
+        // model.cswm[4].up[idx][0] = model.cswm[0].up[idx][NY-2];
+        // model.cswm[4].vp[idx][0] = model.cswm[0].vp[idx][NY-2];
+    }
+    
+    // patch 6
+    for (int idx = 1; idx < NX-1; idx++) {
+        // left
+        
+        if (idx < NX / 2) {
+            model.cswm[5].hp[0][idx] = Interpolate(model.cswm[3].lon[idx][1], model.cswm[3].lon[idx+1][1], model.cswm[3].hp[idx][1], model.cswm[3].hp[idx+1][1], model.cswm[5].lon[0][idx]);
+        }
+        else if (idx == NX / 2) {
+            model.cswm[5].hp[0][idx] = model.cswm[3].hp[idx][1];
+        }
+        else {
+            model.cswm[5].hp[0][idx] = Interpolate(model.cswm[3].lon[idx-1][1], model.cswm[3].lon[idx][1], model.cswm[3].hp[idx-1][1], model.cswm[3].hp[idx][1], model.cswm[5].lon[0][idx]);
+        }
+        // model.cswm[5].up[0][idx] = -model.cswm[3].vp[idx][1];
+        // model.cswm[5].vp[0][idx] = model.cswm[3].up[idx][1];
+        
+
+        
+        // right
+        if (idx < NX / 2) {
+            model.cswm[5].hp[NX-1][idx] = Interpolate(model.cswm[1].lon[(NX-1)-idx][1], model.cswm[1].lon[(NX-1)-idx-1][1], model.cswm[1].hp[(NX-1)-idx][1], model.cswm[1].hp[(NX-1)-idx-1][1], model.cswm[5].lon[idx][NY-1]);
+        }
+        else if (idx == NX / 2) {
+            model.cswm[5].hp[NX-1][idx] = model.cswm[1].hp[(NX-1)-idx][1];
+        }
+        else {
+            model.cswm[5].hp[NX-1][idx] = Interpolate(model.cswm[1].lon[(NX-1)-idx+1][1], model.cswm[1].lon[(NX-1)-idx][1], model.cswm[1].hp[(NX-1)-idx+1][1], model.cswm[1].hp[(NX-1)-idx][1], model.cswm[5].lon[idx][NY-1]);
+        }
+        // model.cswm[5].up[NX-1][idx] = model.cswm[1].vp[(NX-1)-idx][1];
+        // model.cswm[5].vp[NX-1][idx] = -model.cswm[1].up[(NX-1)-idx][1];
+        
+        // up
+        if (idx < NX / 2) {
+            model.cswm[5].hp[idx][NY-1] = Interpolate(model.cswm[0].lon[idx][1], model.cswm[0].lon[idx+1][1], model.cswm[0].hp[idx][1], model.cswm[0].hp[idx+1][1], model.cswm[5].lon[idx][NY-1]);
+        }
+        else if (idx == NX / 2) {
+            model.cswm[5].hp[idx][NY-1] = model.cswm[0].hp[idx][1];
+        }
+        else {
+            model.cswm[5].hp[idx][NY-1] = Interpolate(model.cswm[0].lon[idx-1][1], model.cswm[0].lon[idx][1], model.cswm[0].hp[idx-1][1], model.cswm[0].hp[idx][1], model.cswm[5].lon[idx][NY-1]);
+        }
+        // model.cswm[5].up[idx][NY-1] = model.cswm[0].up[idx][1];
+        // model.cswm[5].vp[idx][NY-1] = model.cswm[0].vp[idx][1];
+        
+        // bottom
+        if (idx < NX / 2) {
+            model.cswm[5].hp[idx][0] = Interpolate(model.cswm[2].lon[(NX-1)-idx][1], model.cswm[2].lon[(NX-1)-idx+1][1], model.cswm[2].hp[(NX-1)-idx][1], model.cswm[2].hp[(NX-1)-idx+1][1], model.cswm[5].lon[idx][0]);
+        }
+        else if (idx == NX / 2) {
+            model.cswm[5].hp[idx][0] = model.cswm[2].hp[(NX-1)-idx][1];
+        }
+        else {
+            model.cswm[5].hp[idx][0] = Interpolate(model.cswm[2].lon[(NX-1)-idx+1][1], model.cswm[2].lon[(NX-1)-idx][1], model.cswm[2].hp[(NX-1)-idx+1][1], model.cswm[2].hp[(NX-1)-idx][1], model.cswm[5].lon[idx][0]);
+        }
+        
+        // model.cswm[5].up[idx][0] = -model.cswm[2].up[(NX-1)-idx][1];
+        // model.cswm[5].vp[idx][0] = -model.cswm[2].vp[(NX-1)-idx][1];
+        
+    }
+}
+*/
+
+double CSWM::Interpolate(double A1, double A2, double y1, double y2, double B) {
+    if (A1 <0) A1 += 2 * M_PI;
+    if (A2 < 0) A1 += 2 * M_PI;
+    if (B < 0) B += 2 * M_PI;
+
+    if (B == 0 and abs(B - A1) > M_PI) B += 2 * M_PI;
+    if (A1 == 0 and A2 == 0 and abs(B - A1) > M_PI) {
+        A1 += M_PI;
+        A2 += M_PI;
+    }
+
+    return y1 + (y2-y1) * (B-A1) / (A2 - A1);
+}
+
+double CSWM::Interpolate4lat(double A1, double A2, double y1, double y2, double B) {
+    return y1 + (y2-y1) * (B-A1) / (A2 - A1);
+}
+
+
+// void CSWM::TransformCoordinate(CSWM &model) {
+//     for (int idx = 0; idx < NX)
+// }
+
+// void ConverPatch2SphereWind(CSWM &model, int p, int i, int j) {
+
+// }
+
+
 void CSWM::BoundaryProcess(CSWM &model) {
     // patch 1
     for (int idx = 1; idx < NX-1; idx++) {
         // left
         model.cswm[0].hp[0][idx] = model.cswm[3].hp[NX-2][idx];
-        model.cswm[0].up[0][idx] = model.cswm[3].up[NX-2][idx];
-        model.cswm[0].vp[0][idx] = model.cswm[3].vp[NX-2][idx];
+        // model.cswm[0].up[0][idx] = model.cswm[3].up[NX-2][idx];
+        // model.cswm[0].vp[0][idx] = model.cswm[3].vp[NX-2][idx];
 
         // right
         model.cswm[0].hp[NX-1][idx] = model.cswm[1].hp[1][idx];
-        model.cswm[0].up[NX-1][idx] = model.cswm[1].up[1][idx];
-        model.cswm[0].vp[NX-1][idx] = model.cswm[1].vp[1][idx];
+        // model.cswm[0].up[NX-1][idx] = model.cswm[1].up[1][idx];
+        // model.cswm[0].vp[NX-1][idx] = model.cswm[1].vp[1][idx];
 
         // up
         model.cswm[0].hp[idx][NY-1] = model.cswm[4].hp[idx][1];
-        model.cswm[0].up[idx][NY-1] = model.cswm[4].up[idx][1];
-        model.cswm[0].vp[idx][NY-1] = model.cswm[4].vp[idx][1];
+        // model.cswm[0].up[idx][NY-1] = model.cswm[4].up[idx][1];
+        // model.cswm[0].vp[idx][NY-1] = model.cswm[4].vp[idx][1];
 
         // bottom
         model.cswm[0].hp[idx][0] = model.cswm[5].hp[idx][NY-2];
-        model.cswm[0].up[idx][0] = model.cswm[5].up[idx][NY-2];
-        model.cswm[0].vp[idx][0] = model.cswm[5].vp[idx][NY-2];
+        // model.cswm[0].up[idx][0] = model.cswm[5].up[idx][NY-2];
+        // model.cswm[0].vp[idx][0] = model.cswm[5].vp[idx][NY-2];
     }
 
     // patch 2
     for (int idx = 1; idx < NX-1; idx++) {
         // left
         model.cswm[1].hp[0][idx] = model.cswm[0].hp[NX-2][idx];
-        model.cswm[1].up[0][idx] = model.cswm[0].up[NX-2][idx];
-        model.cswm[1].vp[0][idx] = model.cswm[0].vp[NX-2][idx];
+        // model.cswm[1].up[0][idx] = model.cswm[0].up[NX-2][idx];
+        // model.cswm[1].vp[0][idx] = model.cswm[0].vp[NX-2][idx];
 
         // right
         model.cswm[1].hp[NX-1][idx] = model.cswm[2].hp[1][idx];
-        model.cswm[1].up[NX-1][idx] = model.cswm[2].up[1][idx];
-        model.cswm[1].vp[NX-1][idx] = model.cswm[2].vp[1][idx];
+        // model.cswm[1].up[NX-1][idx] = model.cswm[2].up[1][idx];
+        // model.cswm[1].vp[NX-1][idx] = model.cswm[2].vp[1][idx];
 
         // up
         model.cswm[1].hp[idx][NY-1] = model.cswm[4].hp[NX-2][idx];
-        model.cswm[1].up[idx][NY-1] = model.cswm[4].vp[NX-2][idx];
-        model.cswm[1].vp[idx][NY-1] = -model.cswm[4].up[NX-2][idx];
+        // model.cswm[1].up[idx][NY-1] = model.cswm[4].vp[NX-2][idx];
+        // model.cswm[1].vp[idx][NY-1] = -model.cswm[4].up[NX-2][idx];
 
         // bottom
         model.cswm[1].hp[idx][0] = model.cswm[5].hp[NX-2][(NY-1)-idx];
-        model.cswm[1].up[idx][0] = -model.cswm[5].vp[NX-2][(NY-1)-idx];
-        model.cswm[1].vp[idx][0] = model.cswm[5].up[NX-2][(NY-1)-idx];
+        // model.cswm[1].up[idx][0] = -model.cswm[5].vp[NX-2][(NY-1)-idx];
+        // model.cswm[1].vp[idx][0] = model.cswm[5].up[NX-2][(NY-1)-idx];
     }
 
     // patch 3
     for (int idx = 1; idx < NX-1; idx++) {
         // left
         model.cswm[2].hp[0][idx] = model.cswm[1].hp[NX-2][idx];
-        model.cswm[2].up[0][idx] = model.cswm[1].up[NX-2][idx];
-        model.cswm[2].vp[0][idx] = model.cswm[1].vp[NX-2][idx];
+        // model.cswm[2].up[0][idx] = model.cswm[1].up[NX-2][idx];
+        // model.cswm[2].vp[0][idx] = model.cswm[1].vp[NX-2][idx];
 
         // right
         model.cswm[2].hp[NX-1][idx] = model.cswm[3].hp[1][idx];
-        model.cswm[2].up[NX-1][idx] = model.cswm[3].up[1][idx];
-        model.cswm[2].vp[NX-1][idx] = model.cswm[3].vp[1][idx];
+        // model.cswm[2].up[NX-1][idx] = model.cswm[3].up[1][idx];
+        // model.cswm[2].vp[NX-1][idx] = model.cswm[3].vp[1][idx];
 
         // up
         model.cswm[2].hp[idx][NY-1] = model.cswm[4].hp[(NX-1)-idx][NY-2];
-        model.cswm[2].up[idx][NY-1] = -model.cswm[4].up[(NX-1)-idx][NY-2];
-        model.cswm[2].vp[idx][NY-1] = -model.cswm[4].vp[(NX-1)-idx][NY-2];
+        // model.cswm[2].up[idx][NY-1] = -model.cswm[4].up[(NX-1)-idx][NY-2];
+        // model.cswm[2].vp[idx][NY-1] = -model.cswm[4].vp[(NX-1)-idx][NY-2];
 
         // bottom
         model.cswm[2].hp[idx][0] = model.cswm[5].hp[(NX-1)-idx][1];
-        model.cswm[2].up[idx][0] = -model.cswm[5].up[(NX-1)-idx][1];
-        model.cswm[2].vp[idx][0] = -model.cswm[5].vp[(NX-1)-idx][1];
+        // model.cswm[2].up[idx][0] = -model.cswm[5].up[(NX-1)-idx][1];
+        // model.cswm[2].vp[idx][0] = -model.cswm[5].vp[(NX-1)-idx][1];
     }
 
     // patch 4
     for (int idx = 1; idx < NX-1; idx++) {
         // left
         model.cswm[3].hp[0][idx] = model.cswm[2].hp[NX-2][idx];
-        model.cswm[3].up[0][idx] = model.cswm[2].up[NX-2][idx];
-        model.cswm[3].vp[0][idx] = model.cswm[2].vp[NX-2][idx];
+        // model.cswm[3].up[0][idx] = model.cswm[2].up[NX-2][idx];
+        // model.cswm[3].vp[0][idx] = model.cswm[2].vp[NX-2][idx];
 
         // right
         model.cswm[3].hp[NX-1][idx] = model.cswm[0].hp[1][idx];
-        model.cswm[3].up[NX-1][idx] = model.cswm[0].up[1][idx];
-        model.cswm[3].vp[NX-1][idx] = model.cswm[0].vp[1][idx];
+        // model.cswm[3].up[NX-1][idx] = model.cswm[0].up[1][idx];
+        // model.cswm[3].vp[NX-1][idx] = model.cswm[0].vp[1][idx];
 
         // up
         model.cswm[3].hp[idx][NY-1] = model.cswm[4].hp[1][(NY-1)-idx];
-        model.cswm[3].up[idx][NY-1] = -model.cswm[4].vp[1][(NY-1)-idx];
-        model.cswm[3].vp[idx][NY-1] = model.cswm[4].up[1][(NY-1)-idx];
+        // model.cswm[3].up[idx][NY-1] = -model.cswm[4].vp[1][(NY-1)-idx];
+        // model.cswm[3].vp[idx][NY-1] = model.cswm[4].up[1][(NY-1)-idx];
 
         // bottom
         model.cswm[3].hp[idx][0] = model.cswm[5].hp[1][idx];
-        model.cswm[3].up[idx][0] = model.cswm[5].vp[1][idx];
-        model.cswm[3].vp[idx][0] = -model.cswm[5].up[1][idx];
+        // model.cswm[3].up[idx][0] = model.cswm[5].vp[1][idx];
+        // model.cswm[3].vp[idx][0] = -model.cswm[5].up[1][idx];
     }
 
     // patch 5
     for (int idx = 1; idx < NX-1; idx++) {
         // left
         model.cswm[4].hp[0][idx] = model.cswm[3].hp[(NX-1)-idx][NY-2];
-        model.cswm[4].up[0][idx] = model.cswm[3].vp[(NX-1)-idx][NY-2];
-        model.cswm[4].vp[0][idx] = -model.cswm[3].up[(NX-1)-idx][NY-2];
+        // model.cswm[4].up[0][idx] = model.cswm[3].vp[(NX-1)-idx][NY-2];
+        // model.cswm[4].vp[0][idx] = -model.cswm[3].up[(NX-1)-idx][NY-2];
 
         // right
         model.cswm[4].hp[NX-1][idx] = model.cswm[1].hp[idx][NY-2];
-        model.cswm[4].up[NX-1][idx] = -model.cswm[1].vp[idx][NY-2];
-        model.cswm[4].vp[NX-1][idx] = model.cswm[1].up[idx][NY-2];
+        // model.cswm[4].up[NX-1][idx] = -model.cswm[1].vp[idx][NY-2];
+        // model.cswm[4].vp[NX-1][idx] = model.cswm[1].up[idx][NY-2];
 
         // up
         model.cswm[4].hp[idx][NY-1] = model.cswm[2].hp[(NX-1)-idx][NY-2];
-        model.cswm[4].up[idx][NY-1] = -model.cswm[2].up[(NX-1)-idx][NY-2];
-        model.cswm[4].vp[idx][NY-1] = -model.cswm[2].vp[(NX-1)-idx][NY-2];
+        // model.cswm[4].up[idx][NY-1] = -model.cswm[2].up[(NX-1)-idx][NY-2];
+        // model.cswm[4].vp[idx][NY-1] = -model.cswm[2].vp[(NX-1)-idx][NY-2];
 
         // bottom
-        model.cswm[4].hp[idx][0] = model.cswm[0].hp[idx][1];
-        model.cswm[4].up[idx][0] = model.cswm[0].up[idx][1];
-        model.cswm[4].vp[idx][0] = model.cswm[0].vp[idx][1];
+        model.cswm[4].hp[idx][0] = model.cswm[0].hp[idx][NY-2];
+        // model.cswm[4].up[idx][0] = model.cswm[0].up[idx][NY-2];
+        // model.cswm[4].vp[idx][0] = model.cswm[0].vp[idx][NY-2];
     }
 
     // patch 6
     for (int idx = 1; idx < NX-1; idx++) {
         // left
         model.cswm[5].hp[0][idx] = model.cswm[3].hp[idx][1];
-        model.cswm[5].up[0][idx] = -model.cswm[3].vp[idx][1];
-        model.cswm[5].vp[0][idx] = model.cswm[3].up[idx][1];
+        // model.cswm[5].up[0][idx] = -model.cswm[3].vp[idx][1];
+        // model.cswm[5].vp[0][idx] = model.cswm[3].up[idx][1];
 
         // right
         model.cswm[5].hp[NX-1][idx] = model.cswm[1].hp[(NX-1)-idx][1];
-        model.cswm[5].up[NX-1][idx] = model.cswm[1].vp[(NX-1)-idx][1];
-        model.cswm[5].vp[NX-1][idx] = -model.cswm[1].up[(NX-1)-idx][1];
+        // model.cswm[5].up[NX-1][idx] = model.cswm[1].vp[(NX-1)-idx][1];
+        // model.cswm[5].vp[NX-1][idx] = -model.cswm[1].up[(NX-1)-idx][1];
 
         // up
         model.cswm[5].hp[idx][NY-1] = model.cswm[0].hp[idx][1];
-        model.cswm[5].up[idx][NY-1] = model.cswm[0].up[idx][1];
-        model.cswm[5].vp[idx][NY-1] = model.cswm[0].vp[idx][1];
+        // model.cswm[5].up[idx][NY-1] = model.cswm[0].up[idx][1];
+        // model.cswm[5].vp[idx][NY-1] = model.cswm[0].vp[idx][1];
 
         // bottom
         model.cswm[5].hp[idx][0] = model.cswm[2].hp[(NX-1)-idx][1];
-        model.cswm[5].up[idx][0] = -model.cswm[2].up[(NX-1)-idx][1];
-        model.cswm[5].vp[idx][0] = -model.cswm[2].vp[(NX-1)-idx][1];
+        // model.cswm[5].up[idx][0] = -model.cswm[2].up[(NX-1)-idx][1];
+        // model.cswm[5].vp[idx][0] = -model.cswm[2].vp[(NX-1)-idx][1];
     }
 }
