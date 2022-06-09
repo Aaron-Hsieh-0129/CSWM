@@ -22,11 +22,11 @@ CSWM::CSWM() {
     // TODO: deal with the odd NX/NY and even NX/NY
     for (int i = 0; i < NX; i++) {
         alpha[i] = -M_PI/4 + (i-0.5) * ((M_PI / 2.) / (NX-2));
-        alpha_u[i] = -M_PI/4 + i * ((M_PI / 2.) / (NX-2));
+        alpha_u[i] = -M_PI/4 + (i-1) * ((M_PI / 2.) / (NX-2));
     }
     for (int j = 0; j < NY; j++) {
         beta[j] = -M_PI/4 + (j-0.5) * ((M_PI / 2.) / (NY-2));
-        beta_v[j] = -M_PI/4 + j * ((M_PI / 2.) / (NY-2));
+        beta_v[j] = -M_PI/4 + (j-1) * ((M_PI / 2.) / (NY-2));
     }
 
     // init alpha/beta
@@ -86,8 +86,12 @@ CSWM::CSWM() {
                     cswm[p].lon[i][j] = alpha2D[i][j] + p * M_PI / 2.;
                     cswm[p].lat[i][j] = atan(tan(beta2D[i][j]) * cos(alpha2D[i][j]));
 
-                    // lon_u/lat_v
+                    // lon_u/lat_u
                     cswm[p].lon_u[i][j] = alpha2D_u[i][j] + p * M_PI / 2.;
+                    cswm[p].lat_u[i][j] = atan(tan(beta2D[i][j]) * cos(alpha2D_u[i][j]));
+
+                    // lon_v/lat_v
+                    cswm[p].lon_v[i][j] = alpha2D[i][j] + p * M_PI / 2.;
                     cswm[p].lat_v[i][j] = atan(tan(beta2D_v[i][j]) * cos(alpha2D[i][j]));
 
                     // x/y
@@ -96,11 +100,11 @@ CSWM::CSWM() {
 
                     // x_u/y_u
                     cswm[p].x_u[i][j] = radius * (cswm[p].lon_u[i][j] - p * M_PI / 2.);
-                    cswm[p].y_u[i][j] = radius * atan(tan(cswm[p].lat[i][j]) / cos(cswm[p].lon_u[i][j] - p * M_PI / 2.));
+                    cswm[p].y_u[i][j] = radius * atan(tan(cswm[p].lat_u[i][j]) / cos(cswm[p].lon_u[i][j] - p * M_PI / 2.));
 
                     // x_v/y_v
-                    cswm[p].x_v[i][j] = radius * (cswm[p].lon[i][j] - p * M_PI / 2.);
-                    cswm[p].y_v[i][j] = radius * atan(tan(cswm[p].lat_v[i][j]) / cos(cswm[p].lon[i][j] - p * M_PI / 2.));
+                    cswm[p].x_v[i][j] = radius * (cswm[p].lon_v[i][j] - p * M_PI / 2.);
+                    cswm[p].y_v[i][j] = radius * atan(tan(cswm[p].lat_v[i][j]) / cos(cswm[p].lon_v[i][j] - p * M_PI / 2.));
 
                     // A/AInverse
                     cswm[p].A[i][j][0] = 1 / (pow(gamma[i][j], 2) * cos(alpha2D[i][j]) * cos(beta2D[i][j])) * gamma[i][j] * cos(beta2D[i][j]);
@@ -146,8 +150,12 @@ CSWM::CSWM() {
                     cswm[p].lon[i][j] = atan2(tan(alpha2D[i][j]), -tan(beta2D[i][j]));
                     cswm[p].lat[i][j] = atan(1 / sqrt(pow(tan(alpha2D[i][j]), 2) + pow(tan(beta2D[i][j]), 2)));
 
-                    // lon_u/lat_v
+                    // lon_u/lat_u
                     cswm[p].lon_u[i][j] = atan2(tan(alpha2D_u[i][j]), -tan(beta2D[i][j]));
+                    cswm[p].lat_u[i][j] = atan(1 / sqrt(pow(tan(alpha2D_u[i][j]), 2) + pow(tan(beta2D[i][j]), 2)));
+
+                    // lon_v/lat_v
+                    cswm[p].lon_v[i][j] = atan2(tan(alpha2D[i][j]), -tan(beta2D_v[i][j]));
                     cswm[p].lat_v[i][j] = atan(1 / sqrt(pow(tan(alpha2D[i][j]), 2) + pow(tan(beta2D_v[i][j]), 2)));
 
                     // x/y
@@ -155,12 +163,12 @@ CSWM::CSWM() {
                     cswm[p].y[i][j] = radius * atan(-cos(cswm[p].lon[i][j]) / tan(cswm[p].lat[i][j]));
 
                     // x_u/y_u
-                    cswm[p].x_u[i][j] = radius * atan(sin(cswm[p].lon_u[i][j]) / tan(cswm[p].lat[i][j]));
-                    cswm[p].y_u[i][j] = radius * atan(-cos(cswm[p].lon_u[i][j]) / tan(cswm[p].lat[i][j]));
+                    cswm[p].x_u[i][j] = radius * atan(sin(cswm[p].lon_u[i][j]) / tan(cswm[p].lat_u[i][j]));
+                    cswm[p].y_u[i][j] = radius * atan(-cos(cswm[p].lon_u[i][j]) / tan(cswm[p].lat_u[i][j]));
 
                     // x_v/y_v
-                    cswm[p].x_v[i][j] = radius * atan(sin(cswm[p].lon[i][j]) / tan(cswm[p].lat_v[i][j]));
-                    cswm[p].y_v[i][j] = radius * atan(-cos(cswm[p].lon[i][j]) / tan(cswm[p].lat_v[i][j]));
+                    cswm[p].x_v[i][j] = radius * atan(sin(cswm[p].lon_v[i][j]) / tan(cswm[p].lat_v[i][j]));
+                    cswm[p].y_v[i][j] = radius * atan(-cos(cswm[p].lon_v[i][j]) / tan(cswm[p].lat_v[i][j]));
 
                     // A/AInverse
                     cswm[p].A[i][j][0] = 1 / (pow(gamma[i][j], 2) * cos(alpha2D[i][j]) * cos(beta2D[i][j])) * (gamma[i][j] * cos(beta2D[i][j]) / cos(alpha2D[i][j]) * cos(cswm[p].lon[i][j]));
@@ -185,15 +193,15 @@ CSWM::CSWM() {
                     cswm[p].AInverse_u[i][j][3] = gamma_u[i][j] * cos(alpha2D_u[i][j]) * cos(beta2D[i][j]) * (gamma[i][j] * cos(beta2D[i][j]) / cos(alpha2D_u[i][j]) * cos(cswm[p].lon_u[i][j]));
 
                     // A_v/AInverse_v
-                    cswm[p].A_v[i][j][0] = 1 / (pow(gamma_v[i][j], 2) * cos(alpha2D[i][j]) * cos(beta2D_v[i][j])) * (gamma_v[i][j] * cos(beta2D_v[i][j]) / cos(alpha2D[i][j]) * cos(cswm[p].lon[i][j]));
-                    cswm[p].A_v[i][j][1] = 1 / (pow(gamma_v[i][j], 2) * cos(alpha2D[i][j]) * cos(beta2D_v[i][j])) * (gamma_v[i][j] * cos(alpha2D[i][j]) / cos(beta2D_v[i][j]) * sin(cswm[p].lon[i][j]));
-                    cswm[p].A_v[i][j][2] = 1 / (pow(gamma_v[i][j], 2) * cos(alpha2D[i][j]) * cos(beta2D_v[i][j])) * (-cos(beta2D_v[i][j]) / cos(alpha2D[i][j]) * sin(cswm[p].lon[i][j]));
-                    cswm[p].A_v[i][j][3] = 1 / (pow(gamma_v[i][j], 2) * cos(alpha2D[i][j]) * cos(beta2D_v[i][j])) * (cos(alpha2D[i][j]) / cos(beta2D_v[i][j]) * cos(cswm[p].lon[i][j]));
+                    cswm[p].A_v[i][j][0] = 1 / (pow(gamma_v[i][j], 2) * cos(alpha2D[i][j]) * cos(beta2D_v[i][j])) * (gamma_v[i][j] * cos(beta2D_v[i][j]) / cos(alpha2D[i][j]) * cos(cswm[p].lon_v[i][j]));
+                    cswm[p].A_v[i][j][1] = 1 / (pow(gamma_v[i][j], 2) * cos(alpha2D[i][j]) * cos(beta2D_v[i][j])) * (gamma_v[i][j] * cos(alpha2D[i][j]) / cos(beta2D_v[i][j]) * sin(cswm[p].lon_v[i][j]));
+                    cswm[p].A_v[i][j][2] = 1 / (pow(gamma_v[i][j], 2) * cos(alpha2D[i][j]) * cos(beta2D_v[i][j])) * (-cos(beta2D_v[i][j]) / cos(alpha2D[i][j]) * sin(cswm[p].lon_v[i][j]));
+                    cswm[p].A_v[i][j][3] = 1 / (pow(gamma_v[i][j], 2) * cos(alpha2D[i][j]) * cos(beta2D_v[i][j])) * (cos(alpha2D[i][j]) / cos(beta2D_v[i][j]) * cos(cswm[p].lon_v[i][j]));
                     
-                    cswm[p].AInverse_v[i][j][0] = gamma_v[i][j] * cos(alpha2D[i][j]) * cos(beta2D_v[i][j]) * (cos(alpha2D[i][j]) / cos(beta2D_v[i][j]) * cos(cswm[p].lon[i][j]));
-                    cswm[p].AInverse_v[i][j][1] = gamma_v[i][j] * cos(alpha2D[i][j]) * cos(beta2D_v[i][j]) * (-gamma_v[i][j] * cos(alpha2D[i][j]) / cos(beta2D_v[i][j]) * sin(cswm[p].lon[i][j]));
-                    cswm[p].AInverse_v[i][j][2] = gamma_v[i][j] * cos(alpha2D[i][j]) * cos(beta2D_v[i][j]) * (cos(beta2D_v[i][j]) / cos(alpha2D[i][j]) * sin(cswm[p].lon[i][j]));
-                    cswm[p].AInverse_v[i][j][3] = gamma_v[i][j] * cos(alpha2D[i][j]) * cos(beta2D_v[i][j]) * (gamma_v[i][j] * cos(beta2D_v[i][j]) / cos(alpha2D[i][j]) * cos(cswm[p].lon[i][j]));
+                    cswm[p].AInverse_v[i][j][0] = gamma_v[i][j] * cos(alpha2D[i][j]) * cos(beta2D_v[i][j]) * (cos(alpha2D[i][j]) / cos(beta2D_v[i][j]) * cos(cswm[p].lon_v[i][j]));
+                    cswm[p].AInverse_v[i][j][1] = gamma_v[i][j] * cos(alpha2D[i][j]) * cos(beta2D_v[i][j]) * (-gamma_v[i][j] * cos(alpha2D[i][j]) / cos(beta2D_v[i][j]) * sin(cswm[p].lon_v[i][j]));
+                    cswm[p].AInverse_v[i][j][2] = gamma_v[i][j] * cos(alpha2D[i][j]) * cos(beta2D_v[i][j]) * (cos(beta2D_v[i][j]) / cos(alpha2D[i][j]) * sin(cswm[p].lon_v[i][j]));
+                    cswm[p].AInverse_v[i][j][3] = gamma_v[i][j] * cos(alpha2D[i][j]) * cos(beta2D_v[i][j]) * (gamma_v[i][j] * cos(beta2D_v[i][j]) / cos(alpha2D[i][j]) * cos(cswm[p].lon_v[i][j]));
                 }
             }
         }
@@ -205,8 +213,12 @@ CSWM::CSWM() {
                     cswm[p].lon[i][j] = atan2(tan(alpha2D[i][j]), tan(beta2D[i][j]));
                     cswm[p].lat[i][j] = -atan(1 / sqrt(pow(tan(alpha2D[i][j]), 2) + pow(tan(beta2D[i][j]), 2)));
 
-                    // lon_u/lat_v
+                    // lon_u/lat_u
                     cswm[p].lon_u[i][j] = atan2(tan(alpha2D_u[i][j]), tan(beta2D[i][j]));
+                    cswm[p].lat_u[i][j] = -atan(1 / sqrt(pow(tan(alpha2D_u[i][j]), 2) + pow(tan(beta2D[i][j]), 2)));
+
+                    // lon_v/lat_v
+                    cswm[p].lon_v[i][j] = atan2(tan(alpha2D[i][j]), tan(beta2D_v[i][j]));
                     cswm[p].lat_v[i][j] = -atan(1 / sqrt(pow(tan(alpha2D[i][j]), 2) + pow(tan(beta2D_v[i][j]), 2)));
 
                     // x/y
@@ -214,12 +226,12 @@ CSWM::CSWM() {
                     cswm[p].y[i][j] = radius * atan(-cos(cswm[p].lon[i][j]) / tan(cswm[p].lat[i][j]));
 
                     // x_u/y_u
-                    cswm[p].x_u[i][j] = radius * atan(-sin(cswm[p].lon_u[i][j]) / tan(cswm[p].lat[i][j]));
-                    cswm[p].y_u[i][j] = radius * atan(-cos(cswm[p].lon_u[i][j]) / tan(cswm[p].lat[i][j]));
+                    cswm[p].x_u[i][j] = radius * atan(-sin(cswm[p].lon_u[i][j]) / tan(cswm[p].lat_u[i][j]));
+                    cswm[p].y_u[i][j] = radius * atan(-cos(cswm[p].lon_u[i][j]) / tan(cswm[p].lat_u[i][j]));
 
                     // x_v/y_v
-                    cswm[p].x_v[i][j] = radius * atan(-sin(cswm[p].lon[i][j]) / tan(cswm[p].lat_v[i][j]));
-                    cswm[p].y_v[i][j] = radius * atan(-cos(cswm[p].lon[i][j]) / tan(cswm[p].lat_v[i][j]));
+                    cswm[p].x_v[i][j] = radius * atan(-sin(cswm[p].lon_v[i][j]) / tan(cswm[p].lat_v[i][j]));
+                    cswm[p].y_v[i][j] = radius * atan(-cos(cswm[p].lon_v[i][j]) / tan(cswm[p].lat_v[i][j]));
 
                     // A/AInverse
                     cswm[p].A[i][j][0] = 1 / (pow(gamma[i][j], 2) * cos(alpha2D[i][j]) * cos(beta2D[i][j])) * (gamma[i][j] * cos(beta2D[i][j]) / cos(alpha2D[i][j]) * cos(cswm[p].lon[i][j]));
@@ -244,19 +256,24 @@ CSWM::CSWM() {
                     cswm[p].AInverse_u[i][j][3] = gamma_u[i][j] * cos(alpha2D_u[i][j]) * cos(beta2D[i][j]) * (gamma_u[i][j] * cos(beta2D[i][j]) / cos(alpha2D_u[i][j]) * cos(cswm[p].lon_u[i][j]));
 
                     // A_v/AInverse_v
-                    cswm[p].A_v[i][j][0] = 1 / (pow(gamma_v[i][j], 2) * cos(alpha2D[i][j]) * cos(beta2D_v[i][j])) * (gamma_v[i][j] * cos(beta2D_v[i][j]) / cos(alpha2D[i][j]) * cos(cswm[p].lon[i][j]));
-                    cswm[p].A_v[i][j][1] = 1 / (pow(gamma_v[i][j], 2) * cos(alpha2D[i][j]) * cos(beta2D_v[i][j])) * (-gamma_v[i][j] * cos(alpha2D[i][j]) / cos(beta2D_v[i][j]) * sin(cswm[p].lon[i][j]));
-                    cswm[p].A_v[i][j][2] = 1 / (pow(gamma_v[i][j], 2) * cos(alpha2D[i][j]) * cos(beta2D_v[i][j])) * (cos(beta2D_v[i][j]) / cos(alpha2D[i][j]) * sin(cswm[p].lon[i][j]));
-                    cswm[p].A_v[i][j][3] = 1 / (pow(gamma_v[i][j], 2) * cos(alpha2D[i][j]) * cos(beta2D_v[i][j])) * (cos(alpha2D[i][j]) / cos(beta2D_v[i][j]) * cos(cswm[p].lon[i][j]));
+                    cswm[p].A_v[i][j][0] = 1 / (pow(gamma_v[i][j], 2) * cos(alpha2D[i][j]) * cos(beta2D_v[i][j])) * (gamma_v[i][j] * cos(beta2D_v[i][j]) / cos(alpha2D[i][j]) * cos(cswm[p].lon_v[i][j]));
+                    cswm[p].A_v[i][j][1] = 1 / (pow(gamma_v[i][j], 2) * cos(alpha2D[i][j]) * cos(beta2D_v[i][j])) * (-gamma_v[i][j] * cos(alpha2D[i][j]) / cos(beta2D_v[i][j]) * sin(cswm[p].lon_v[i][j]));
+                    cswm[p].A_v[i][j][2] = 1 / (pow(gamma_v[i][j], 2) * cos(alpha2D[i][j]) * cos(beta2D_v[i][j])) * (cos(beta2D_v[i][j]) / cos(alpha2D[i][j]) * sin(cswm[p].lon_v[i][j]));
+                    cswm[p].A_v[i][j][3] = 1 / (pow(gamma_v[i][j], 2) * cos(alpha2D[i][j]) * cos(beta2D_v[i][j])) * (cos(alpha2D[i][j]) / cos(beta2D_v[i][j]) * cos(cswm[p].lon_v[i][j]));
 
-                    cswm[p].AInverse_v[i][j][0] = gamma_v[i][j] * cos(alpha2D[i][j]) * cos(beta2D_v[i][j]) * (cos(alpha2D[i][j]) / cos(beta2D_v[i][j]) * cos(cswm[p].lon[i][j]));
-                    cswm[p].AInverse_v[i][j][1] = gamma_v[i][j] * cos(alpha2D[i][j]) * cos(beta2D_v[i][j]) * (gamma_v[i][j] * cos(alpha2D[i][j]) / cos(beta2D_v[i][j]) * sin(cswm[p].lon[i][j]));
-                    cswm[p].AInverse_v[i][j][2] = gamma_v[i][j] * cos(alpha2D[i][j]) * cos(beta2D_v[i][j]) * (-cos(beta2D_v[i][j]) / cos(alpha2D[i][j]) * sin(cswm[p].lon[i][j]));
-                    cswm[p].AInverse_v[i][j][3] = gamma_v[i][j] * cos(alpha2D[i][j]) * cos(beta2D_v[i][j]) * (gamma_v[i][j] * cos(beta2D_v[i][j]) / cos(alpha2D[i][j]) * cos(cswm[p].lon[i][j]));
+                    cswm[p].AInverse_v[i][j][0] = gamma_v[i][j] * cos(alpha2D[i][j]) * cos(beta2D_v[i][j]) * (cos(alpha2D[i][j]) / cos(beta2D_v[i][j]) * cos(cswm[p].lon_v[i][j]));
+                    cswm[p].AInverse_v[i][j][1] = gamma_v[i][j] * cos(alpha2D[i][j]) * cos(beta2D_v[i][j]) * (gamma_v[i][j] * cos(alpha2D[i][j]) / cos(beta2D_v[i][j]) * sin(cswm[p].lon_v[i][j]));
+                    cswm[p].AInverse_v[i][j][2] = gamma_v[i][j] * cos(alpha2D[i][j]) * cos(beta2D_v[i][j]) * (-cos(beta2D_v[i][j]) / cos(alpha2D[i][j]) * sin(cswm[p].lon_v[i][j]));
+                    cswm[p].AInverse_v[i][j][3] = gamma_v[i][j] * cos(alpha2D[i][j]) * cos(beta2D_v[i][j]) * (gamma_v[i][j] * cos(beta2D_v[i][j]) / cos(alpha2D[i][j]) * cos(cswm[p].lon_v[i][j]));
                 }
             }
         }
-    }   
+    }
+    // for (int i = 0; i < NX; i++) {
+    //     std::cout << cswm[0].x_u[i][NY/2] << " ";
+    //     std::cout << cswm[0].x[i][NY/2] << " ";
+    //     std::cout << std::endl;
+    // }   
 }
 
 // TODO: Interpolation

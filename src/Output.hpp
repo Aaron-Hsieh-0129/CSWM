@@ -8,4 +8,6 @@ class Output {
         static void output_u(int, CSWM &);
         static void output_v(int, CSWM &);
         static void output_parameter(CSWM &);
+        static void outputGrid(int, CSWM &);
+        static void outputPatch(int, int, CSWM &);
 };

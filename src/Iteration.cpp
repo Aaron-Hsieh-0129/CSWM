@@ -49,9 +49,9 @@ void Iteration::ph_pt(CSWM &model) {
                                  0.25 * model.gUpper_v[i][j][2] * (model.cswm[p].u[i+1][j]+model.cswm[p].u[i][j]+model.cswm[p].u[i+1][j-1]+model.cswm[p].u[i][j-1]))));
                 
                 
-                model.cswm[p].hp[i][j] = model.cswm[p].hm[i][j] + D2T * (-psqrtGHU_px);
+                // model.cswm[p].hp[i][j] = model.cswm[p].hm[i][j] + D2T * (-psqrtGHU_px);
                 // model.cswm[p].hp[i][j] = model.cswm[p].hm[i][j] + D2T * (-psqrtGHU_py);
-                // model.cswm[p].hp[i][j] = model.cswm[p].hm[i][j] + D2T * (-psqrtGHU_px - psqrtGHU_py);
+                model.cswm[p].hp[i][j] = model.cswm[p].hm[i][j] + D2T * (-psqrtGHU_px - psqrtGHU_py);
 
                 // diffusion
                 #ifdef DIFFUSION
@@ -140,6 +140,9 @@ void Iteration::pv_pt(CSWM &model) {
 
 
 void Iteration::Leapfrog(CSWM &model) {
+    // for (int p = 0; p < 6; p++) {
+    //     Output::outputGrid(p, model);
+    // }
     Output::output_parameter(model);
     int n = 0;
     double timenow = 0.;
@@ -150,11 +153,13 @@ void Iteration::Leapfrog(CSWM &model) {
 
         // TODO: OUTPUT file
         if (n % OUTPUTINTERVAL == 0) {
+            // for (int p = 0; p < 6; p++) {
+            //     Output::outputPatch(n, p, model);
+            // }
             Output::output_h(n, model);
             Output::output_u(n, model);
             Output::output_v(n, model);
         }
-        // break;
 
         n++;
         timenow = n * DT;

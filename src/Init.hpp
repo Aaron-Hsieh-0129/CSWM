@@ -11,4 +11,6 @@ class Init {
         static double GetV(double);
         static double GetUU(double, double);
         static double GetVV(double);
+
+        static double GetHH(double, double);
 };

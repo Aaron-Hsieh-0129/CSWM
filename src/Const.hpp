@@ -1,6 +1,6 @@
 #define WORKDIRECTORY "/Users/Aaron/CSWM/src"
 
-#define FILLVALUE (999999999999999999999999990999.)
+#define FILLVALUE (-999999999999999999999999990999.)
 #define gravity (9.80665)
 #define radius (6371220.)
 #define omega (7.292E-5)

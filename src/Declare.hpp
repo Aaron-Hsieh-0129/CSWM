@@ -14,7 +14,8 @@ class CSWM {
                 double up[NX][NY], u[NX][NY], um[NX][NY];
                 double vp[NX][NY], v[NX][NY], vm[NX][NY];
                 double lon[NX][NY], lat[NX][NY];
-                double lon_u[NX][NY], lat_v[NX][NY];
+                double lon_u[NX][NY], lat_u[NX][NY];
+                double lon_v[NX][NY], lat_v[NX][NY];
                 double x[NX][NY], y[NX][NY];
                 double x_u[NX][NY], y_u[NX][NY];
                 double x_v[NX][NY], y_v[NX][NY];

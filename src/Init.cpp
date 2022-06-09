@@ -5,47 +5,74 @@ void Init::Init2d(CSWM & model) {
     for (int p = 0; p < 6; p++) {
         for (int i = 0; i < NX; i++) {
             for (int j = 0; j < NY; j++) {
-                model.cswm[p].h[i][j] = GetH(model.cswm[p].lon[i][j], model.cswm[p].lat[i][j]);
-                model.cswm[p].u[i][j] = GetU(0.5*(model.cswm[p].lon[i][j] + model.cswm[p].lon[i-1][j]), model.cswm[p].lat[i][j]);
-                // model.cswm[p].u[i][j] = GetUU(0.5*(model.cswm[p].lon[i][j] + model.cswm[p].lon[i-1][j]), model.cswm[p].lat[i][j]);
-                model.cswm[p].v[i][j] = GetV(model.cswm[p].lon[i][j]);
-                // model.cswm[p].v[i][j] = GetVV(model.cswm[p].lon[i][j]);           
+                model.cswm[p].hp[i][j] = GetH(model.cswm[p].lon[i][j], model.cswm[p].lat[i][j]);
+                // model.cswm[p].hp[i][j] = GetHH(model.cswm[p].lon[i][j], model.cswm[p].lat[i][j]);
+                // model.cswm[p].up[i][j] = GetU(model.cswm[p].lon_u[i][j], model.cswm[p].lat_u[i][j]);
+                // model.cswm[p].up[i][j] = GetUU(model.cswm[p].lon_u[i][j], model.cswm[p].lat_u[i][j]);
+                // model.cswm[p].vp[i][j] = GetV(model.cswm[p].lon_v[i][j]);
+                // model.cswm[p].vp[i][j] = GetVV(model.cswm[p].lon_v[i][j]);  
+                model.cswm[p].up[i][j] = 0; 
+                if (p == 0 || p == 4 || p == 5) {
+                    model.cswm[p].vp[i][j] = 20;
+                }
+                else if (p == 2) {
+                    model.cswm[p].vp[i][j] = -20; 
+                }    
+                else {
+                    model.cswm[p].vp[i][j] = 0.; 
+                } 
             }
         }
     }
 
-    for (int p = 0; p < 6; p++) {
-        for (int idx = 0; idx < NX; idx++) {
-            model.cswm[p].u[0][idx] = GetU(model.cswm[p].lon[0][idx] - 0.5 * (model.cswm[p].lon[1][idx] - model.cswm[p].lon[0][idx]), model.cswm[p].lat[0][idx]);
-            model.cswm[p].u[NX-1][idx] = GetU(model.cswm[p].lon[NX-1][idx] + 0.5 * (model.cswm[p].lon[NX-1][idx] - model.cswm[p].lon[NX-2][idx]), model.cswm[p].lat[NX-1][idx]);
-            model.cswm[p].u[idx][0] = GetU(0.5*(model.cswm[p].lon[idx][0] + model.cswm[p].lon[idx-1][0]), model.cswm[p].lat[idx][0]);
-            model.cswm[p].u[idx][NY-1] = GetU(0.5*(model.cswm[p].lon[idx][0] + model.cswm[p].lon[idx-1][0]), model.cswm[p].lat[idx][NY-1]);
-
-
-            model.cswm[p].v[0][idx] = GetV(model.cswm[p].lon[0][idx]);
-            model.cswm[p].v[NX-1][idx] = GetV(model.cswm[p].lon[NX-1][idx]);
-            model.cswm[p].v[idx][0] = GetV(model.cswm[p].lon[idx][0]);
-            model.cswm[p].v[idx][NY-1] = GetV(model.cswm[p].lon[idx][NY-1]);
-
-            // model.cswm[p].u[0][j] = GetUU(model.cswm[p].lon[0][j] - 0.5 * (model.cswm[p].lon[1][j] - model.cswm[p].lon[0][j]), model.cswm[p].lat[0][j]);
-            // model.cswm[p].u[NX-1][j] = GetUU(model.cswm[p].lon[NX-1][j] + 0.5 * (model.cswm[p].lon[NX-1][j] - model.cswm[p].lon[NX-2][j]), model.cswm[p].lat[NX-1][j]);
-        }
-    }
-
+    model.BoundaryProcess(model);
 
     for (int p = 0; p < 6; p++) {
         for (int i = 0; i < NX; i++) {
             for (int j = 0; j < NY; j++) {
-                model.cswm[p].hm[i][j] = model.cswm[p].h[i][j]; 
-                model.cswm[p].um[i][j] = model.cswm[p].u[i][j]; 
-                model.cswm[p].vm[i][j] = model.cswm[p].v[i][j];   
+                model.cswm[p].hm[i][j] = model.cswm[p].hp[i][j]; 
+                model.cswm[p].um[i][j] = model.cswm[p].up[i][j]; 
+                model.cswm[p].vm[i][j] = model.cswm[p].vp[i][j];   
 
-                model.cswm[p].hp[i][j] = model.cswm[p].h[i][j]; 
-                model.cswm[p].up[i][j] = model.cswm[p].u[i][j]; 
-                model.cswm[p].vp[i][j] = model.cswm[p].v[i][j];  
+                model.cswm[p].h[i][j] = model.cswm[p].hp[i][j]; 
+                model.cswm[p].u[i][j] = model.cswm[p].up[i][j]; 
+                model.cswm[p].v[i][j] = model.cswm[p].vp[i][j];  
             }
         }
     }
+
+    // for (int p = 0; p < 6; p++) {
+    //     for (int idx = 0; idx < NX; idx++) {
+    //         model.cswm[p].u[0][idx] = GetU(model.cswm[p].lon[0][idx] - 0.5 * (model.cswm[p].lon[1][idx] - model.cswm[p].lon[0][idx]), model.cswm[p].lat[0][idx]);
+    //         model.cswm[p].u[NX-1][idx] = GetU(model.cswm[p].lon[NX-1][idx] + 0.5 * (model.cswm[p].lon[NX-1][idx] - model.cswm[p].lon[NX-2][idx]), model.cswm[p].lat[NX-1][idx]);
+    //         model.cswm[p].u[idx][0] = GetU(0.5*(model.cswm[p].lon[idx][0] + model.cswm[p].lon[idx-1][0]), model.cswm[p].lat[idx][0]);
+    //         model.cswm[p].u[idx][NY-1] = GetU(0.5*(model.cswm[p].lon[idx][NY-1] + model.cswm[p].lon[idx-1][NY-1]), model.cswm[p].lat[idx][NY-1]);
+
+
+    //         model.cswm[p].v[0][idx] = GetV(model.cswm[p].lon[0][idx]);
+    //         model.cswm[p].v[NX-1][idx] = GetV(model.cswm[p].lon[NX-1][idx]);
+    //         model.cswm[p].v[idx][0] = GetV(model.cswm[p].lon[idx][0]);
+    //         model.cswm[p].v[idx][NY-1] = GetV(model.cswm[p].lon[idx][NY-1]);
+
+    //         model.cswm[p].u[0][j] = GetUU(model.cswm[p].lon[0][j] - 0.5 * (model.cswm[p].lon[1][j] - model.cswm[p].lon[0][j]), model.cswm[p].lat[0][j]);
+    //         model.cswm[p].u[NX-1][j] = GetUU(model.cswm[p].lon[NX-1][j] + 0.5 * (model.cswm[p].lon[NX-1][j] - model.cswm[p].lon[NX-2][j]), model.cswm[p].lat[NX-1][j]);
+    //     }
+    // }
+
+
+    // for (int p = 0; p < 6; p++) {
+    //     for (int i = 0; i < NX; i++) {
+    //         for (int j = 0; j < NY; j++) {
+    //             model.cswm[p].hm[i][j] = model.cswm[p].h[i][j]; 
+    //             model.cswm[p].um[i][j] = model.cswm[p].u[i][j]; 
+    //             model.cswm[p].vm[i][j] = model.cswm[p].v[i][j];   
+
+    //             model.cswm[p].hp[i][j] = model.cswm[p].h[i][j]; 
+    //             model.cswm[p].up[i][j] = model.cswm[p].u[i][j]; 
+    //             model.cswm[p].vp[i][j] = model.cswm[p].v[i][j];  
+    //         }
+    //     }
+    // }
 
     for (int p = 0; p < 6; p++) {
         for (int i = 0; i < NX; i++) {
@@ -74,7 +101,18 @@ void Init::Init2d(CSWM & model) {
             }
         }
     }    
-    
+
+    // for (int idx = 0; idx < NX; idx++) {
+    //     model.cswm[2].v[idx][0] = model.cswm[5].v[(NX-1)-idx][1];
+    //     model.cswm[2].u[idx][0] = model.cswm[5].u[(NX-1)-idx][1];
+
+    //     model.cswm[5].v[idx][0] = model.cswm[2].v[(NX-1)-idx][1];
+    //     model.cswm[5].u[idx][0] = model.cswm[2].u[(NX-1)-idx][1];
+    // }
+    // for (int idx = 0; idx < NX; idx++) {
+    //     std::cout << model.cswm[2].u[idx][0] << " " << model.cswm[5].u[NX-1-idx][1] << std::endl;
+    //     std::cout << model.cswm[5].lon[idx][0] << " " << model.cswm[5].lon[idx][0] << std::endl;
+    // }
     // std::cout << model.cswm[2].um[NX/2][1] << " " << model.cswm[2].u[NX/2][1] << " " << model.cswm[2].up[NX/2][1] << std::endl;
     // std::cout << model.cswm[2].vm[NX/2][1] << " " << model.cswm[2].v[NX/2][1] << " " << model.cswm[2].vp[NX/2][1] << std::endl;
 
@@ -165,14 +203,12 @@ void Init::Init2d(CSWM & model) {
     }
     */
 
-
-
 }
 
 
 double Init::GetH(double lon, double lat) {
     double h0 = 1000;
-    double lonC = 0., latC = 0;
+    double lonC = 0., latC = 0.;
     double rd = radius * acos(sin(latC) * sin(lat) + cos(latC) * cos(lat) * cos(lon-lonC));
     double r0 = radius / 3.;
     if (rd < r0) return h0 / 2. * (1 + cos(M_PI * rd / r0));
@@ -195,14 +231,25 @@ double Init::GetV(double lon) {
     return v;
 }
 
+double Init::GetHH(double lon, double lat) {
+    double h0 = 1000;
+    double lonC = M_PI/2, latC = 0.;
+    double rd = radius * acos(sin(latC) * sin(lat) + cos(latC) * cos(lat) * cos(lon-lonC));
+    double r0 = radius / 3.;
+    if (rd < r0) return h0 / 2. * (1 + cos(M_PI * rd / r0));
+    else return 0.;
+}
+
 double Init::GetUU(double lon, double lat) {
     double u0 = 2 * M_PI * radius / (12. * 86400);
+    // double alpha0 = 0.;
     double alpha0 = M_PI / 2.;
     double u = u0 * (cos(alpha0) * cos(lat) + sin(alpha0) * cos(lon) * sin(lat));
     return u;
 }
 
 double Init::GetVV(double lon) {
+    // double alpha0 = 0.;
     double alpha0 = M_PI / 2.;
     double u0 = 2 * M_PI * radius / (12. * 86400);
     double v = -u0 * sin(alpha0) * sin(lon);
