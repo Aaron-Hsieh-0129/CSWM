@@ -22,5 +22,8 @@
 #define TIMEEND (24. * 86400)
 #define OUTPUTINTERVAL (10)
 
+// #define HorizontalAdvection
+// #define VerticalAdvection
+
 // #define DIFFUSION
 // #define TIMEFILTER

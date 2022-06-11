@@ -790,3 +790,23 @@ void CSWM::BoundaryProcess(CSWM &model) {
     }
     return;
 }
+
+double CSWM::ConvertUPatch2Sphere(CSWM &model, int p, int i, int j) {
+    return (model.cswm[p].A[i][j][0] * model.cswm[p].u[i][j] + 
+            model.cswm[p].A[i][j][1] * 0.25 * (model.cswm[p].v[i][j+1] + model.cswm[p].v[i][j] + model.cswm[p].v[i-1][j+1] + model.cswm[p].v[i-1][j]));
+}
+
+double CSWM::ConvertVPatch2Sphere(CSWM &model, int p, int i, int j) {
+    return (model.cswm[p].A[i][j][0] * 0.25 * (model.cswm[p].u[i+1][j] + model.cswm[p].u[i][j] + model.cswm[p].u[i+1][j-1] + model.cswm[p].u[i][j-1]) + 
+            model.cswm[p].A[i][j][1] * model.cswm[p].v[i][j+1]);
+}
+
+double CSWM::ConvertUSphere2Patch(CSWM &model, int p, int i, int j) {
+    return (model.cswm[p].AInverse_u[i][j][0] * model.cswm[p].u[i][j] + 
+            model.cswm[p].AInverse_u[i][j][1] * 0.25 * (model.cswm[p].v[i][j+1] + model.cswm[p].v[i][j] + model.cswm[p].v[i-1][j+1] + model.cswm[p].v[i-1][j]));
+}
+
+double CSWM::ConvertVSphere2Patch(CSWM &model, int p, int i, int j) {
+    return (model.cswm[p].AInverse_v[i][j][0] * 0.25 * (model.cswm[p].u[i+1][j] + model.cswm[p].u[i][j] + model.cswm[p].u[i+1][j-1] + model.cswm[p].u[i][j-1]) + 
+            model.cswm[p].AInverse_v[i][j][1] * model.cswm[p].v[i][j+1]);
+}

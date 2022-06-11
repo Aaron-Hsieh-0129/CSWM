@@ -18,13 +18,19 @@ void Output::output_u(int n, CSWM &model) {
     std::fstream foutu;
     std::string uname = "../outputs/u/u_" + std::to_string(n) + ".txt";
     foutu.open(uname, std::ios::out);
+
+    std::fstream foutu_lon_lat;
+    std::string u_lon_latname = "../outputs/u_lon_lat/u_lon_lat_" + std::to_string(n) + ".txt";
+    foutu_lon_lat.open(u_lon_latname, std::ios::out);
     for (int p = 0; p < 6; p++) {
         for (int i = 1; i < NX-1; i++) {
             for (int j = 1; j < NY-1; j++) {
                 foutu << model.cswm[p].u[i][j] << " ";
+                foutu_lon_lat << model.ConvertUPatch2Sphere(model, p, i, j) << " ";
             }
         }
     }
+
     return;
 }
 
@@ -32,10 +38,15 @@ void Output::output_v(int n, CSWM &model) {
     std::fstream foutv;
     std::string vname = "../outputs/v/v_" + std::to_string(n) + ".txt";
     foutv.open(vname, std::ios::out);
+
+    std::fstream foutv_lon_lat;
+    std::string v_lon_latname = "../outputs/v_lon_lat/v_lon_lat_" + std::to_string(n) + ".txt";
+    foutv_lon_lat.open(v_lon_latname, std::ios::out);
     for (int p = 0; p < 6; p++) {
         for (int i = 1; i < NX-1; i++) {
             for (int j = 1; j < NY-1; j++) {
                 foutv << model.cswm[p].v[i][j] << " ";
+                foutv_lon_lat << model.ConvertVPatch2Sphere(model, p, i, j) << " ";
             }
         }
     }

@@ -5,26 +5,67 @@ void Init::Init2d(CSWM & model) {
     for (int p = 0; p < 6; p++) {
         for (int i = 0; i < NX; i++) {
             for (int j = 0; j < NY; j++) {
-                model.cswm[p].hp[i][j] = GetH(model.cswm[p].lon[i][j], model.cswm[p].lat[i][j]);
-                // model.cswm[p].hp[i][j] = GetHH(model.cswm[p].lon[i][j], model.cswm[p].lat[i][j]);
+                // Jung
+                // model.cswm[p].hp[i][j] = GetH(model.cswm[p].lon[i][j], model.cswm[p].lat[i][j]);
                 // model.cswm[p].up[i][j] = GetU(model.cswm[p].lon_u[i][j], model.cswm[p].lat_u[i][j]);
-                // model.cswm[p].up[i][j] = GetUU(model.cswm[p].lon_u[i][j], model.cswm[p].lat_u[i][j]);
                 // model.cswm[p].vp[i][j] = GetV(model.cswm[p].lon_v[i][j]);
-                // model.cswm[p].vp[i][j] = GetVV(model.cswm[p].lon_v[i][j]);  
-                model.cswm[p].up[i][j] = 0; 
-                if (p == 0 || p == 4 || p == 5) {
-                    model.cswm[p].vp[i][j] = 20;
-                }
-                else if (p == 2) {
-                    model.cswm[p].vp[i][j] = -20; 
-                }    
-                else {
-                    model.cswm[p].vp[i][j] = 0.; 
-                } 
+
+                // model.cswm[p].up[i][j] = model.cswm[p].AInverse_u[i][j][0] * model.cswm[p].up[i][j] + model.cswm[p].AInverse_u[i][j][1] * GetV(model.cswm[p].lon_u[i][j]);
+                // model.cswm[p].vp[i][j] = model.cswm[p].AInverse_v[i][j][2] * GetU(model.cswm[p].lon_v[i][j], model.cswm[p].lat_v[i][j]) + model.cswm[p].AInverse_v[i][j][3] * model.cswm[p].vp[i][j];
+                
+                // Williamson
+                model.cswm[p].hp[i][j] = GetHH(model.cswm[p].lon[i][j], model.cswm[p].lat[i][j]);
+                model.cswm[p].up[i][j] = GetUU(model.cswm[p].lon_u[i][j], model.cswm[p].lat_u[i][j]);
+                model.cswm[p].vp[i][j] = GetVV(model.cswm[p].lon_v[i][j]);  
+
+                model.cswm[p].up[i][j] = model.cswm[p].AInverse_u[i][j][0] * model.cswm[p].up[i][j] + model.cswm[p].AInverse_u[i][j][1] * GetVV(model.cswm[p].lon_u[i][j]);
+                model.cswm[p].vp[i][j] = model.cswm[p].AInverse_v[i][j][2] * GetUU(model.cswm[p].lon_v[i][j], model.cswm[p].lat_v[i][j]) + model.cswm[p].AInverse_v[i][j][3] * model.cswm[p].vp[i][j];
+
+                // Jung Verical test
+                // if (p == 1 || p == 3) {
+                //     model.cswm[p].up[i][j] = 0.;
+                //     model.cswm[p].vp[i][j] = 0.;
+                // }
+
+                // William Verical test
+                // if (p == 0 || p == 2) {
+                //     model.cswm[p].up[i][j] = 0.;
+                //     model.cswm[p].vp[i][j] = 0.;
+                // }
+
+                // William Horizontal
+                // if (p == 4 || p == 5) {
+                //     model.cswm[p].up[i][j] = 0.;
+                //     model.cswm[p].vp[i][j] = 0.;
+                // }
+
+                // Vertical
+                #ifdef VerticalAdvection
+                    model.cswm[p].up[i][j] = 0; 
+                    if (p == 0 || p == 4 || p == 5) {
+                        model.cswm[p].vp[i][j] = 40;
+                    }
+                    else if (p == 2) {
+                        model.cswm[p].vp[i][j] = -40; 
+                    }    
+                    else {
+                        model.cswm[p].vp[i][j] = 0.; 
+                    } 
+                #endif
+
+                // Horizontal
+                #ifdef HorizontalAdvection
+                    model.cswm[p].vp[i][j] = 0; 
+                    if (p == 0 || p == 1 || p == 2 || p == 3) {
+                        model.cswm[p].up[i][j] = 40;
+                    }
+                    else {
+                        model.cswm[p].up[i][j] = 0; 
+                    }    
+                #endif
             }
         }
     }
-
     model.BoundaryProcess(model);
 
     for (int p = 0; p < 6; p++) {
@@ -217,23 +258,25 @@ double Init::GetH(double lon, double lat) {
 
 double Init::GetU(double lon, double lat) {
     double u0 = 2 * M_PI * radius / (12. * 86400);
-    double alpha0 = 0.;
+    // double alpha0 = 0.;
     // double alpha0 = M_PI / 2.;
+    double alpha0 = M_PI / 4.;
     double u = u0 * (cos(alpha0) * cos(lat) + sin(alpha0) * sin(lon) * sin(lat));
     return u;
 }
 
 double Init::GetV(double lon) {
     double u0 = 2 * M_PI * radius / (12. * 86400);
-    double alpha0 = 0.;
+    // double alpha0 = 0.;
     // double alpha0 = M_PI / 2.;
+    double alpha0 = M_PI / 4.;
     double v = u0 * sin(alpha0) * cos(lon);
     return v;
 }
 
 double Init::GetHH(double lon, double lat) {
     double h0 = 1000;
-    double lonC = M_PI/2, latC = 0.;
+    double lonC = 3*M_PI/2., latC = 0.;
     double rd = radius * acos(sin(latC) * sin(lat) + cos(latC) * cos(lat) * cos(lon-lonC));
     double r0 = radius / 3.;
     if (rd < r0) return h0 / 2. * (1 + cos(M_PI * rd / r0));
@@ -241,16 +284,18 @@ double Init::GetHH(double lon, double lat) {
 }
 
 double Init::GetUU(double lon, double lat) {
-    double u0 = 2 * M_PI * radius / (12. * 86400);
     // double alpha0 = 0.;
-    double alpha0 = M_PI / 2.;
+    // double alpha0 = M_PI / 2.;
+    double alpha0 = M_PI / 4.;
+    double u0 = 2 * M_PI * radius / (12. * 86400);
     double u = u0 * (cos(alpha0) * cos(lat) + sin(alpha0) * cos(lon) * sin(lat));
     return u;
 }
 
 double Init::GetVV(double lon) {
     // double alpha0 = 0.;
-    double alpha0 = M_PI / 2.;
+    // double alpha0 = M_PI / 2.;
+    double alpha0 = M_PI / 4.;
     double u0 = 2 * M_PI * radius / (12. * 86400);
     double v = -u0 * sin(alpha0) * sin(lon);
     return v;
