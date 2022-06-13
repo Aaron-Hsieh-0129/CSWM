@@ -1,7 +1,7 @@
 #include "Iteration.hpp"
 
 void Iteration::ph_pt(CSWM &model) {
-    double psqrtGHU_px, psqrtGHU_py, dx_for_h, dy_for_h;
+    double psqrtGHU_px = 0, psqrtGHU_py = 0, dx_for_h = 0, dy_for_h = 0;
     for (int p = 0; p < 6; p++) {
         for (int i = 1; i < NX-1; i++) {
             for (int j = 1; j < NY-1; j++) {
@@ -76,29 +76,37 @@ void Iteration::ph_pt(CSWM &model) {
 }
 
 void Iteration::pu_pt(CSWM &model) {
+    double dx_for_u = 0, dy_for_u = 0;
     double pgH_px = 0, pU2_px = 0, pUV_px = 0, pV2_px = 0, rotationU = 0;
     for (int p = 0; p < 6; p++) {
         for (int i = 1; i < NX-1; i++) {
             for (int j = 1; j < NY-1; j++) {
-                pgH_px = gravity / (model.cswm[p].x[i+1][j] - model.cswm[p].x[i][j]) * (model.cswm[p].h[i][j] - model.cswm[p].h[i-1][j]);
+                dx_for_u = model.cswm[p].x[i][j] - model.cswm[p].x[i-1][j];
+                dy_for_u = 0.5 * (model.cswm[p].y_v[i][j+1] + model.cswm[p].y_v[i-1][j+1]) - 0.5 * (model.cswm[p].y_v[i][j] + model.cswm[p].y_v[i-1][j]);
 
-                pU2_px = 0.125 / (model.cswm[p].x[i+1][j] - model.cswm[p].x[i][j]) * 
+                pgH_px = gravity / dx_for_u * (model.cswm[p].h[i][j] - model.cswm[p].h[i-1][j]);
+
+                pU2_px = 0.125 / dx_for_u * 
                          (model.gUpper[i][j][0] * pow((model.cswm[p].u[i+1][j] + model.cswm[p].u[i][j]), 2) -
                           model.gUpper[i-1][j][0] * pow((model.cswm[p].u[i][j] + model.cswm[p].u[i-1][j]), 2));
 
-                pUV_px = 0.25 / (model.cswm[p].x[i+1][j] - model.cswm[p].x[i][j]) * 
+                pUV_px = 0.25 / dx_for_u * 
                          ((model.gUpper[i][j][1] * (model.cswm[p].u[i+1][j]+model.cswm[p].u[i][j]) * (model.cswm[p].v[i][j+1]+model.cswm[p].v[i][j])) - 
                           (model.gUpper[i-1][j][1] * (model.cswm[p].u[i][j]+model.cswm[p].u[i-1][j]) * (model.cswm[p].v[i-1][j+1]+model.cswm[p].v[i-1][j])));
 
-                pV2_px = 0.125 / (model.cswm[p].x[i+1][j] - model.cswm[p].x[i][j]) * 
+                pV2_px = 0.125 / dx_for_u * 
                          (model.gUpper[i][j][3] * pow((model.cswm[p].v[i][j+1] + model.cswm[p].v[i][j]), 2) -
                           model.gUpper[i-1][j][3] * pow((model.cswm[p].v[i-1][j+1] + model.cswm[p].v[i-1][j]), 2));
 
-                rotationU = 0.25 * ((((model.cswm[p].v[i][j+1] + model.cswm[p].v[i][j]) - (model.cswm[p].v[i-1][j+1] + model.cswm[p].v[i-1][j])) / (model.cswm[p].x[i+1][j] - model.cswm[p].x[i][j])) - 
-                                     ((model.cswm[p].u[i][j+1]-model.cswm[p].u[i][j-1]) / (model.cswm[p].y[i][j+1]-model.cswm[p].y[i][j])) + (model.sqrtG[i][j]+model.sqrtG[i-1][j]) * 2*omega*sin(model.cswm[p].lat[i][j])) * 
-                             ((model.gUpper[i][j][2] + model.gUpper[i-1][j][2]) * model.cswm[p].u[i][j] + 
-                               0.25 * (model.gUpper[i][j][3] + model.gUpper[i-1][j][3]) * 
-                                      (model.cswm[p].v[i][j+1] + model.cswm[p].v[i][j] + model.cswm[p].v[i-1][j+1] + model.cswm[p].v[i-1][j]));
+                // rotationU = (0.5*(((model.cswm[p].v[i][j+1] + model.cswm[p].v[i][j]) - (model.cswm[p].v[i-1][j+1] + model.cswm[p].v[i-1][j])) / dx_for_u) - 
+                //              0.5*((model.cswm[p].u[i][j+1] - model.cswm[p].u[i][j-1]) / dy_for_u) + 2 * model.sqrtG_u[i][j] * omega * sin(model.cswm[p].lat_u[i][j])) * 
+                //             (model.gUpper_u[i][j][2] * model.cswm[p].u[i][j] + 
+                //                0.25 * model.gUpper_u[i][j][3] * (model.cswm[p].v[i][j+1] + model.cswm[p].v[i][j] + model.cswm[p].v[i-1][j+1] + model.cswm[p].v[i-1][j]));
+
+                rotationU = (0.5*(((model.cswm[p].v[i][j+1] + model.cswm[p].v[i][j]) - (model.cswm[p].v[i-1][j+1] + model.cswm[p].v[i-1][j])) / dx_for_u) - 
+                             0.5*((model.cswm[p].u[i][j+1] - model.cswm[p].u[i][j-1]) / dy_for_u) + model.sqrtG_u[i][j] * f) * 
+                            (model.gUpper_u[i][j][2] * model.cswm[p].u[i][j] + 
+                               0.25 * model.gUpper_u[i][j][3] * (model.cswm[p].v[i][j+1] + model.cswm[p].v[i][j] + model.cswm[p].v[i-1][j+1] + model.cswm[p].v[i-1][j]));
 
                 model.cswm[p].up[i][j] = model.cswm[p].um[i][j] + D2T * (-pgH_px - pU2_px - pUV_px - pV2_px + rotationU);
             }
@@ -107,30 +115,35 @@ void Iteration::pu_pt(CSWM &model) {
 }
 
 void Iteration::pv_pt(CSWM &model) {
+    double dx_for_v = 0, dy_for_v = 0;
     double pgH_py = 0, pU2_py = 0, pUV_py = 0, pV2_py = 0, rotationV = 0;
     for (int p = 0; p < 6; p++) {
         for (int i = 1; i < NX-1; i++) {
             for (int j = 1; j < NY-1; j++) {
-                pgH_py = gravity / (model.cswm[p].y[i][j+1] - model.cswm[p].y[i][j]) * (model.cswm[p].h[i][j] - model.cswm[p].h[i][j-1]);
+                dx_for_v = 0.5 * (model.cswm[p].x_u[i+1][j] + model.cswm[p].x_u[i+1][j-1]) - 0.5 * (model.cswm[p].x_u[i][j] + model.cswm[p].x_u[i][j-1]);
+                dy_for_v = model.cswm[p].y[i][j] - model.cswm[p].y[i][j-1];
 
-                pU2_py = 0.125 / (model.cswm[p].y[i][j+1] - model.cswm[p].y[i][j]) * 
-                         (model.gUpper[i][j][0] * pow((model.cswm[p].u[i+1][j] + model.cswm[p].u[i][j]), 2) -
-                          model.gUpper[i][j-1][0] * pow((model.cswm[p].u[i+1][j-1] + model.cswm[p].u[i][j-1]), 2));
+                pgH_py = gravity / dy_for_v * (model.cswm[p].h[i][j] - model.cswm[p].h[i][j-1]);
 
-                pUV_py = 0.25 / (model.cswm[p].y[i][j+1] - model.cswm[p].y[i][j]) * 
+                pU2_py = 0.125 / dy_for_v * (model.gUpper[i][j][0] * pow((model.cswm[p].u[i+1][j] + model.cswm[p].u[i][j]), 2) -
+                                             model.gUpper[i][j-1][0] * pow((model.cswm[p].u[i+1][j-1] + model.cswm[p].u[i][j-1]), 2));
+
+                pUV_py = 0.25 / dy_for_v * 
                          ((model.gUpper[i][j][1] * (model.cswm[p].u[i+1][j]+model.cswm[p].u[i][j]) * (model.cswm[p].v[i][j+1]+model.cswm[p].v[i][j])) - 
                           (model.gUpper[i][j-1][1] * (model.cswm[p].u[i+1][j-1]+model.cswm[p].u[i][j-1]) * (model.cswm[p].v[i][j]+model.cswm[p].v[i][j-1])));
 
-                pV2_py = 0.125 / (model.cswm[p].y[i][j+1] - model.cswm[p].y[i][j]) * 
-                         (model.gUpper[i][j][3] * pow((model.cswm[p].v[i][j+1] + model.cswm[p].v[i][j]), 2) -
-                          model.gUpper[i][j-1][3] * pow((model.cswm[p].v[i][j] + model.cswm[p].v[i][j-1]), 2));
+                pV2_py = 0.125 / dy_for_v * (model.gUpper[i][j][3] * pow((model.cswm[p].v[i][j+1] + model.cswm[p].v[i][j]), 2) -
+                                             model.gUpper[i][j-1][3] * pow((model.cswm[p].v[i][j] + model.cswm[p].v[i][j-1]), 2));
 
-                rotationV = 0.25 * ((((model.cswm[p].v[i+1][j] - model.cswm[p].v[i-1][j])) / (model.cswm[p].x[i+1][j] - model.cswm[p].x[i][j])) - 
-                                    (((model.cswm[p].u[i+1][j]+model.cswm[p].u[i][j]) - (model.cswm[p].u[i+1][j-1]+model.cswm[p].u[i][j-1])) / (model.cswm[p].y[i][j+1]-model.cswm[p].y[i][j])) + 
-                                    (model.sqrtG[i][j]+model.sqrtG[i][j-1]) * 2*omega*sin(0.5*(model.cswm[p].lat[i][j]+model.cswm[p].lat[i][j-1]))) * 
-                                   ((model.gUpper[i][j][1] + model.gUpper[i][j-1][1]) * model.cswm[p].v[i][j] + 
-                                     0.25 * (model.gUpper[i][j][0] + model.gUpper[i][j-1][0]) * 
-                                    (model.cswm[p].u[i+1][j] + model.cswm[p].u[i][j] + model.cswm[p].u[i+1][j-1] + model.cswm[p].u[i][j-1]));
+                // rotationV = (0.5*((model.cswm[p].v[i+1][j] - model.cswm[p].v[i-1][j]) / dx_for_v) - 
+                //              0.5*(((model.cswm[p].u[i+1][j]+model.cswm[p].u[i][j]) - (model.cswm[p].u[i+1][j-1]+model.cswm[p].u[i][j-1])) / dy_for_v) + model.sqrtG_v[i][j] * 2*omega*sin(model.cswm[p].lat_v[i][j])) * 
+                //             (model.gUpper_v[i][j][1] * model.cswm[p].v[i][j] + 
+                //                 0.25 * model.gUpper_v[i][j][0] * (model.cswm[p].u[i+1][j] + model.cswm[p].u[i][j] + model.cswm[p].u[i+1][j-1] + model.cswm[p].u[i][j-1]));
+
+                rotationV = (0.5*((model.cswm[p].v[i+1][j] - model.cswm[p].v[i-1][j]) / dx_for_v) - 
+                             0.5*(((model.cswm[p].u[i+1][j]+model.cswm[p].u[i][j]) - (model.cswm[p].u[i+1][j-1]+model.cswm[p].u[i][j-1])) / dy_for_v) + model.sqrtG_v[i][j] * f) * 
+                            (model.gUpper_v[i][j][1] * model.cswm[p].v[i][j] + 
+                                0.25 * model.gUpper_v[i][j][0] * (model.cswm[p].u[i+1][j] + model.cswm[p].u[i][j] + model.cswm[p].u[i+1][j-1] + model.cswm[p].u[i][j-1]));
 
                 model.cswm[p].vp[i][j] = model.cswm[p].vm[i][j] + D2T * (-pgH_py - pU2_py - pUV_py - pV2_py - rotationV);
             }
@@ -169,6 +182,8 @@ void Iteration::Leapfrog(CSWM &model) {
         // pu_pt(model);
         // pv_pt(model);
         model.BoundaryProcess(model);
+        // model.ExtrapolationBoundary(model);
+        // model.BoundaryTransform(model);
 
         // next step
         for (int p = 0; p < 6; p++) {

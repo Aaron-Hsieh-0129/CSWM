@@ -56,12 +56,28 @@ void Output::output_v(int n, CSWM &model) {
 void Output::output_parameter(CSWM &model) {
     std::fstream foutlon;
     std::fstream foutlat;
+    std::fstream foutlon_withghost;
+    std::fstream foutlat_withghost;
     std::fstream foutx;
     std::fstream fouty;
+    // std::fstream foutA;
+    // std::fstream foutAInverse;
+    // std::fstream foutA_u;
+    // std::fstream foutAInverse_u;
+    // std::fstream foutA_v;
+    // std::fstream foutAInverse_v;
     foutlon.open("../outputs/lon.txt", std::ios::out);
     foutlat.open("../outputs/lat.txt", std::ios::out);
+    foutlon_withghost.open("../outputs/lon_withghost.txt", std::ios::out);
+    foutlat_withghost.open("../outputs/lat_withghost.txt", std::ios::out);
     foutx.open("../outputs/x.txt", std::ios::out);
     fouty.open("../outputs/y.txt", std::ios::out);
+    // foutA.open("../outputs/ConvertMatrix/A.txt", std::ios::out);
+    // foutAInverse.open("../outputs/ConvertMatrix/AInverse.txt", std::ios::out);
+    // foutA_u.open("../outputs/ConvertMatrix/A_u.txt", std::ios::out);
+    // foutAInverse_u.open("../outputs/ConvertMatrix/AInverse_u.txt", std::ios::out);
+    // foutA_v.open("../outputs/ConvertMatrix/A_v.txt", std::ios::out);
+    // foutAInverse_v.open("../outputs/ConvertMatrix/AInverse_v.txt", std::ios::out);
 
     for (int p = 0; p < 6; p++) {
         for (int i = 1; i < NX-1; i++) {
@@ -70,6 +86,22 @@ void Output::output_parameter(CSWM &model) {
                 foutlat << model.cswm[p].lat[i][j] << " ";
                 foutx << model.cswm[p].x[i][j] << " ";
                 fouty << model.cswm[p].y[i][j] << " ";
+
+                // foutA << model.cswm[p].A[i][j] << " ";
+                // foutAInverse << model.cswm[p].AInverse[i][j] << " ";
+                // foutA_u << model.cswm[p].A_u[i][j] << " ";
+                // foutAInverse_u << model.cswm[p].AInverse_u[i][j] << " ";
+                // foutA_v << model.cswm[p].A_v[i][j] << " ";
+                // foutAInverse_v << model.cswm[p].AInverse_v[i][j] << " ";
+            }
+        }
+    }
+
+    for (int p = 0; p < 6; p++) {
+        for (int i = 0; i < NX; i++) {
+            for (int j = 0; j < NY; j++) { 
+                foutlon_withghost << model.cswm[p].lon[i][j] << " ";
+                foutlat_withghost << model.cswm[p].lat[i][j] << " ";
             }
         }
     }
