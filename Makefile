@@ -28,8 +28,8 @@ Iteration.o	: src/Iteration.cpp
 # clean all the .o and executable files
 clean:
 		rm -rf *.o bin/*
-		rm -rf outputs/h/* outputs/u/* outputs/v/* outputs/patch1/*.txt outputs/patch1/h/* outputs/patch1/u/* outputs/patch1/v/* outputs/patch2/*.txt outputs/patch2/h/* outputs/patch2/u/* outputs/patch2/v/*
+		rm -rf outputs/h/*  outputs/u/* outputs/v/* outputs/patch1/*.txt outputs/patch1/h/* outputs/patch1/u/* outputs/patch1/v/* outputs/patch2/*.txt outputs/patch2/h/* outputs/patch2/u/* outputs/patch2/v/*
 		rm -rf outputs/patch3/*.txt outputs/patch3/h/* outputs/patch3/u/* outputs/patch3/v/* outputs/patch4/*.txt outputs/patch4/h/* outputs/patch4/u/* outputs/patch4/v/*
 		rm -rf outputs/patch5/*.txt outputs/patch5/h/* outputs/patch5/u/* outputs/patch5/v/* outputs/patch6/*.txt outputs/patch6/h/* outputs/patch6/u/* outputs/patch6/v/*
 		rm -rf outputs/u_lon_lat/* outputs/v_lon_lat/* 
-		rm -rf graphs/h/* graphs/u/* graphs/v/* graphs/test/h_1/* graphs/test/h_2/* graphs/test/h/*
+		rm -rf graphs/h/sphere/* graphs/h/curvilinear/* graphs/wind/* graphs/test/h_1/* graphs/test/h_2/* graphs/test/h/*

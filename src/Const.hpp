@@ -4,7 +4,7 @@
 #define gravity (9.80665)
 #define radius (6371220.)
 #define omega (7.292E-5)
-#define f (1E-4)
+#define f (0.)
 
 #define DX (2)
 #define DY (2)
@@ -25,9 +25,9 @@
 
 // #define HorizontalAdvection
 // #define VerticalAdvection
-#define Jung
+// #define Jung
 // #define Williamson
-// #define Geostrophy
+#define Geostrophy
 
 // #define DIFFUSION
 // #define TIMEFILTER

@@ -8,15 +8,19 @@ void Init::Init2d(CSWM & model) {
                 // Jung
                 #ifdef Jung
                     model.cswm[p].hp[i][j] = GetH(model.cswm[p].lon[i][j], model.cswm[p].lat[i][j]);
-                    model.cswm[p].up[i][j] = model.cswm[p].AInverse_u[i][j][0] * GetU(model.cswm[p].lon_u[i][j], model.cswm[p].lat_u[i][j]) + model.cswm[p].AInverse_u[i][j][1] * GetV(model.cswm[p].lon_u[i][j]);
-                    model.cswm[p].vp[i][j] = model.cswm[p].AInverse_v[i][j][2] * GetU(model.cswm[p].lon_v[i][j], model.cswm[p].lat_v[i][j]) + model.cswm[p].AInverse_v[i][j][3] * GetV(model.cswm[p].lon_v[i][j]);
+                    model.cswm[p].up[i][j] = (model.gLower_u[i][j][0] * model.cswm[p].AInverse_u[i][j][0] + model.gLower_u[i][j][1] * model.cswm[p].AInverse_u[i][j][2]) * GetU(model.cswm[p].lon_u[i][j], model.cswm[p].lat_u[i][j]) + 
+                                             (model.gLower_u[i][j][0] * model.cswm[p].AInverse_u[i][j][1] + model.gLower_u[i][j][1] * model.cswm[p].AInverse_u[i][j][3]) * GetV(model.cswm[p].lon_u[i][j]);
+                    model.cswm[p].vp[i][j] = (model.gLower_v[i][j][2] * model.cswm[p].AInverse_v[i][j][0] + model.gLower_v[i][j][3] * model.cswm[p].AInverse_v[i][j][2]) * GetU(model.cswm[p].lon_v[i][j], model.cswm[p].lat_v[i][j]) + 
+                                             (model.gLower_v[i][j][2] * model.cswm[p].AInverse_v[i][j][1] + model.gLower_v[i][j][3] * model.cswm[p].AInverse_v[i][j][3]) * GetV(model.cswm[p].lon_v[i][j]);
                 #endif
 
                 // Williamson
                 #ifdef Williamson
                     model.cswm[p].hp[i][j] = GetHH(model.cswm[p].lon[i][j], model.cswm[p].lat[i][j]);
-                    model.cswm[p].up[i][j] = model.cswm[p].AInverse_u[i][j][0] * GetUU(model.cswm[p].lon_u[i][j], model.cswm[p].lat_u[i][j]) + model.cswm[p].AInverse_u[i][j][1] * GetVV(model.cswm[p].lon_u[i][j]);
-                    model.cswm[p].vp[i][j] = model.cswm[p].AInverse_v[i][j][2] * GetUU(model.cswm[p].lon_v[i][j], model.cswm[p].lat_v[i][j]) + model.cswm[p].AInverse_v[i][j][3] * GetVV(model.cswm[p].lon_v[i][j]);
+                    model.cswm[p].up[i][j] = (model.gLower_u[i][j][0] * model.cswm[p].AInverse_u[i][j][0] + model.gLower_u[i][j][1] * model.cswm[p].AInverse_u[i][j][2]) * GetUU(model.cswm[p].lon_u[i][j], model.cswm[p].lat_u[i][j]) + 
+                                             (model.gLower_u[i][j][0] * model.cswm[p].AInverse_u[i][j][1] + model.gLower_u[i][j][1] * model.cswm[p].AInverse_u[i][j][3]) * GetVV(model.cswm[p].lon_u[i][j]);
+                    model.cswm[p].vp[i][j] = (model.gLower_v[i][j][2] * model.cswm[p].AInverse_v[i][j][0] + model.gLower_v[i][j][3] * model.cswm[p].AInverse_v[i][j][2]) * GetUU(model.cswm[p].lon_v[i][j], model.cswm[p].lat_v[i][j]) + 
+                                             (model.gLower_v[i][j][2] * model.cswm[p].AInverse_v[i][j][1] + model.gLower_v[i][j][3] * model.cswm[p].AInverse_v[i][j][3]) * GetVV(model.cswm[p].lon_v[i][j]);
                 #endif
 
 
@@ -54,6 +58,10 @@ void Init::Init2d(CSWM & model) {
             }
         }
     }
+    for (int idx = 0; idx < NX; idx++) {
+        std::cout << model.cswm[0].up[NX/2][idx] << " ";
+    }
+    std::cout << std::endl;
     model.BoundaryProcess(model);
 
     for (int p = 0; p < 6; p++) {
@@ -112,18 +120,18 @@ double Init::GetH(double lon, double lat) {
 
 double Init::GetU(double lon, double lat) {
     double u0 = 2 * M_PI * radius / (12. * 86400);
-    // double alpha0 = 0.;
+    double alpha0 = 0.;
     // double alpha0 = M_PI / 2.;
-    double alpha0 = M_PI / 4.;
+    // double alpha0 = M_PI / 4.;
     double u = u0 * (cos(alpha0) * cos(lat) + sin(alpha0) * sin(lon) * sin(lat));
     return u;
 }
 
 double Init::GetV(double lon) {
     double u0 = 2 * M_PI * radius / (12. * 86400);
-    // double alpha0 = 0.;
+    double alpha0 = 0.;
     // double alpha0 = M_PI / 2.;
-    double alpha0 = M_PI / 4.;
+    // double alpha0 = M_PI / 4.;
     double v = u0 * sin(alpha0) * cos(lon);
     return v;
 }
@@ -138,9 +146,9 @@ double Init::GetHH(double lon, double lat) {
 }
 
 double Init::GetUU(double lon, double lat) {
-    double alpha0 = 0.;
+    // double alpha0 = 0.;
     // double alpha0 = M_PI / 2.;
-    // double alpha0 = M_PI / 4.;
+    double alpha0 = M_PI / 4.;
     // double alpha0 = 0.05;
     // double alpha0 = M_PI/2. - 0.05;
     double u0 = 2 * M_PI * radius / (12. * 86400);
@@ -149,9 +157,9 @@ double Init::GetUU(double lon, double lat) {
 }
 
 double Init::GetVV(double lon) {
-    double alpha0 = 0.;
+    // double alpha0 = 0.;
     // double alpha0 = M_PI / 2.;
-    // double alpha0 = M_PI / 4.;
+    double alpha0 = M_PI / 4.;
     // double alpha0 = 0.05;
     // double alpha0 = M_PI/2. - 0.05;
     double u0 = 2 * M_PI * radius / (12. * 86400);

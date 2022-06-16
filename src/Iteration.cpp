@@ -48,9 +48,6 @@ void Iteration::ph_pt(CSWM &model) {
                                 (model.gUpper_v[i][j][3] * model.cswm[p].v[i][j] + 
                                  0.25 * model.gUpper_v[i][j][2] * (model.cswm[p].u[i+1][j]+model.cswm[p].u[i][j]+model.cswm[p].u[i+1][j-1]+model.cswm[p].u[i][j-1]))));
                 
-                
-                // model.cswm[p].hp[i][j] = model.cswm[p].hm[i][j] + D2T * (-psqrtGHU_px);
-                // model.cswm[p].hp[i][j] = model.cswm[p].hm[i][j] + D2T * (-psqrtGHU_py);
                 model.cswm[p].hp[i][j] = model.cswm[p].hm[i][j] + D2T * (-psqrtGHU_px - psqrtGHU_py);
 
                 // diffusion
@@ -82,7 +79,7 @@ void Iteration::pu_pt(CSWM &model) {
         for (int i = 1; i < NX-1; i++) {
             for (int j = 1; j < NY-1; j++) {
                 dx_for_u = model.cswm[p].x[i][j] - model.cswm[p].x[i-1][j];
-                dy_for_u = 0.5 * (model.cswm[p].y_v[i][j+1] + model.cswm[p].y_v[i-1][j+1]) - 0.5 * (model.cswm[p].y_v[i][j] + model.cswm[p].y_v[i-1][j]);
+                dy_for_u = 0.5 * (model.cswm[p].y_v[i][j+1] + model.cswm[p].y_v[i-1][j+1]) - 0.5 * (model.cswm[p].y_v[i][j] + model.cswm[p].y_v[i-1][j]); 
 
                 pgH_px = gravity / dx_for_u * (model.cswm[p].h[i][j] - model.cswm[p].h[i-1][j]);
 
@@ -109,6 +106,7 @@ void Iteration::pu_pt(CSWM &model) {
                                0.25 * model.gUpper_u[i][j][3] * (model.cswm[p].v[i][j+1] + model.cswm[p].v[i][j] + model.cswm[p].v[i-1][j+1] + model.cswm[p].v[i-1][j]));
 
                 model.cswm[p].up[i][j] = model.cswm[p].um[i][j] + D2T * (-pgH_px - pU2_px - pUV_px - pV2_px + rotationU);
+                // model.cswm[p].up[i][j] = model.cswm[p].um[i][j] + D2T * (-pgH_px - pU2_px - pUV_px - pV2_px);
             }
         }
     }
@@ -146,6 +144,7 @@ void Iteration::pv_pt(CSWM &model) {
                                 0.25 * model.gUpper_v[i][j][0] * (model.cswm[p].u[i+1][j] + model.cswm[p].u[i][j] + model.cswm[p].u[i+1][j-1] + model.cswm[p].u[i][j-1]));
 
                 model.cswm[p].vp[i][j] = model.cswm[p].vm[i][j] + D2T * (-pgH_py - pU2_py - pUV_py - pV2_py - rotationV);
+                // model.cswm[p].vp[i][j] = model.cswm[p].vm[i][j] + D2T * (-pgH_py - pU2_py - pUV_py - pV2_py);
             }
         }
     }
@@ -179,8 +178,8 @@ void Iteration::Leapfrog(CSWM &model) {
 
         // calculate
         ph_pt(model);
-        // pu_pt(model);
-        // pv_pt(model);
+        pu_pt(model);
+        pv_pt(model);
         model.BoundaryProcess(model);
         // model.ExtrapolationBoundary(model);
         // model.BoundaryTransform(model);
