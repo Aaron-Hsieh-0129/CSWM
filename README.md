@@ -1,3 +1,1 @@
-# CSWM
-
-## Cubed-Sphere Shallow Water Model
+# CSWM (Cubed-Sphere Shallow Water Model)
