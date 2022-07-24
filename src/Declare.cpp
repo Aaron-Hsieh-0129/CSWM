@@ -18,8 +18,6 @@ CSWM::patch::patch() {
 
 CSWM::CSWM() {
     double alpha[NX], beta[NY], alpha_u[NX], beta_v[NY];
-    double alpha2D[NX][NY], beta2D[NX][NY], alpha2D_u[NX][NY], beta2D_v[NX][NY];
-    // TODO: deal with the odd NX/NY and even NX/NY
     for (int i = 0; i < NX; i++) {
         alpha[i] = -M_PI/4 + (i-0.5) * ((M_PI / 2.) / (NX-2));
         alpha_u[i] = -M_PI/4 + (i-1) * ((M_PI / 2.) / (NX-2));
@@ -30,16 +28,23 @@ CSWM::CSWM() {
     }
 
     // init alpha/beta
-    for (int p = 0; p < 6; p++) {
-        for (int i = 0; i < NX; i++) {
-            for (int j = 0; j < NY; j++) {
-                alpha2D[i][j] = alpha[i];
-                beta2D[i][j] = beta[j];
-                alpha2D_u[i][j] = alpha_u[i];
-                beta2D_v[i][j] = beta_v[j];
-            }
+    for (int i = 0; i < NX; i++) {
+        for (int j = 0; j < NY; j++) {
+            alpha2D[i][j] = alpha[i];
+            beta2D[i][j] = beta[j];
+            alpha2D_u[i][j] = alpha_u[i];
+            beta2D_v[i][j] = beta_v[j];
         }
     }
+    // bug test
+    // for (int idx = 0; idx < NX; idx++) {
+    //     std::cout << alpha2D[idx][NX/2] << " ";
+    // }
+    // std::cout << std::endl;
+    // for (int idx = 0; idx < NX; idx++) {
+    //     std::cout << beta2D[NX/2][idx] << " ";
+    // }
+    // std::cout << std::endl;
 
     // calculate gamma, sqrtG, gUpper
     for (int i = 0; i < NX; i++) {
@@ -284,14 +289,23 @@ CSWM::CSWM() {
             }
         }
     }
+
+
+    for (int p = 0; p < 6; p++) {
+        for (int i = 0; i < NX; i++) {
+            for (int j = 0; j < NY; j++) {
+                cswm[p].CF[i][j] = 2 * omega * (-cos(cswm[p].lon[i][j]) * cos(cswm[p].lat[i][j]) * sin(ALPHA0) + sin(cswm[p].lat[i][j]) * cos(ALPHA0));
+                cswm[p].CF_u[i][j] = 2 * omega * (-cos(cswm[p].lon_u[i][j]) * cos(cswm[p].lat_u[i][j]) * sin(ALPHA0) + sin(cswm[p].lat_u[i][j]) * cos(ALPHA0));
+                cswm[p].CF_v[i][j] = 2 * omega * (-cos(cswm[p].lon_v[i][j]) * cos(cswm[p].lat_v[i][j]) * sin(ALPHA0) + sin(cswm[p].lat_v[i][j]) * cos(ALPHA0));
+            }
+        }
+    }
 }
 
 void CSWM::BoundaryProcess(CSWM &model) {
     // patch 1
     for (int idx = 0; idx < NX; idx++) {
-        // left
         if (idx < NX / 2) {
-            // left
             model.cswm[0].hp[0][idx] = Interpolate4lat(model.cswm[3].lat[NX-2][idx], model.cswm[3].lat[NX-2][idx+1], model.cswm[3].hp[NX-2][idx], model.cswm[3].hp[NX-2][idx+1], model.cswm[0].lat[0][idx]);
             model.cswm[0].hp[NX-1][idx] = Interpolate4lat(model.cswm[1].lat[1][idx], model.cswm[1].lat[1][idx+1], model.cswm[1].hp[1][idx], model.cswm[1].hp[1][idx+1], model.cswm[0].lat[NX-1][idx]);
             model.cswm[0].hp[idx][NY-1] = Interpolate4lat(model.cswm[4].lon[idx][1], model.cswm[4].lon[idx+1][1], model.cswm[4].hp[idx][1], model.cswm[4].hp[idx+1][1], model.cswm[0].lon[idx][NY-1]);
@@ -313,7 +327,6 @@ void CSWM::BoundaryProcess(CSWM &model) {
 
     // patch 2
     for (int idx = 0; idx < NX; idx++) {
-        // left
         if (idx < NX / 2) {
             model.cswm[1].hp[0][idx] = Interpolate4lat(model.cswm[0].lat[NX-2][idx], model.cswm[0].lat[NX-2][idx+1], model.cswm[0].hp[NX-2][idx], model.cswm[0].hp[NX-2][idx+1], model.cswm[1].lat[0][idx]);
             model.cswm[1].hp[NX-1][idx] = Interpolate4lat(model.cswm[2].lat[1][idx], model.cswm[2].lat[1][idx+1], model.cswm[2].hp[1][idx], model.cswm[2].hp[1][idx+1], model.cswm[1].lat[NX-1][idx]);
@@ -325,12 +338,6 @@ void CSWM::BoundaryProcess(CSWM &model) {
             model.cswm[1].hp[NX-1][idx] = model.cswm[2].hp[1][idx];
             model.cswm[1].hp[idx][NY-1] = model.cswm[4].hp[NX-2][idx];
             model.cswm[1].hp[idx][0] = model.cswm[5].hp[NX-2][(NY-1)-idx];
-
-            model.cswm[1].up[0][idx] = model.cswm[0].up[NX-2][idx];
-            model.cswm[1].up[NX-1][idx] = model.cswm[2].up[1][idx];
-
-            model.cswm[1].vp[0][idx] = model.cswm[0].vp[NX-2][idx];
-            model.cswm[1].vp[NX-1][idx] = model.cswm[2].vp[1][idx];
         }
         else {
             model.cswm[1].hp[0][idx] = Interpolate4lat(model.cswm[0].lat[NX-2][idx-1], model.cswm[0].lat[NX-2][idx], model.cswm[0].hp[NX-2][idx-1], model.cswm[0].hp[NX-2][idx], model.cswm[1].lat[0][idx]);
@@ -446,7 +453,7 @@ double CSWM::Interpolate4lat(double A1, double A2, double y1, double y2, double 
     return y1 + (y2-y1) * (B-A1) / (A2 - A1);
 }
 
-
+/*
 void CSWM::BoundaryTransform(CSWM &model) {
     // patch 1
     for (int idx = 0; idx < NX; idx++) {
@@ -476,7 +483,7 @@ void CSWM::BoundaryTransform(CSWM &model) {
     }
 
     // patch 2
-    for (int idx = 0; idx < NX; idx++) {
+    for (int idx = 1; idx < NX-1; idx++) {
         // left
         // model.cswm[1].up[0][idx] = ConvertUPatch2Patch(model, 1, 0, 0, NX-2, idx, idx);
         // model.cswm[1].vp[0][idx] = ConvertVPatch2Patch(model, 1, 0, 0, NX-2, idx, idx);
@@ -493,21 +500,21 @@ void CSWM::BoundaryTransform(CSWM &model) {
         // model.cswm[1].up[idx][NY-1] = ConvertUPatch2Patch(model, 1, 4, idx, NX-2, NY-1, idx);
         // model.cswm[1].vp[idx][NY-1] = ConvertVPatch2Patch(model, 1, 4, idx, NX-2, NY-1, idx);
         // model.cswm[1].up[idx][NY-1] = ConvertBV2AUPatch2Patch(model, 1, 4, idx, NX-2, NY-1, idx);
-        // model.cswm[1].vp[idx][NY-1] = -ConvertBU2AVPatch2Patch(model, 1, 4, idx, NX-2, NY-1, idx);
+        // model.cswm[1].vp[idx][NY-1] = ConvertBU2AVPatch2Patch(model, 1, 4, idx, NX-2, NY-1, idx);
         model.cswm[1].up[idx][NY-1] = model.cswm[4].vp[NX-2][idx];
         model.cswm[1].vp[idx][NY-1] = -model.cswm[4].up[NX-2][idx];
 
         // bottom
         // model.cswm[1].up[idx][0] = ConvertUPatch2Patch(model, 1, 5, idx, NX-2, 0, (NY-1)-idx);
         // model.cswm[1].vp[idx][0] = ConvertVPatch2Patch(model, 1, 5, idx, NX-2, 0, (NY-1)-idx);
-        // model.cswm[1].up[idx][0] = -ConvertBV2AUPatch2Patch(model, 1, 5, idx, NX-2, 0, (NY-1)-idx);
+        // model.cswm[1].up[idx][0] = ConvertBV2AUPatch2Patch(model, 1, 5, idx, NX-2, 0, (NY-1)-idx);
         // model.cswm[1].vp[idx][0] = ConvertBU2AVPatch2Patch(model, 1, 5, idx, NX-2, 0, (NY-1)-idx);
         model.cswm[1].up[idx][0] = -model.cswm[5].vp[NX-2][(NY-1)-idx];
         model.cswm[1].vp[idx][0] = model.cswm[5].up[NX-2][(NY-1)-idx];
     }
 
     // patch 3
-    for (int idx = 0; idx < NX; idx++) {
+    for (int idx = 1; idx < NX-1; idx++) {
         // left
         // model.cswm[2].up[0][idx] = ConvertUPatch2Patch(model, 2, 1, 0, NX-2, idx, idx);
         // model.cswm[2].vp[0][idx] = ConvertVPatch2Patch(model, 2, 1, 0, NX-2, idx, idx);
@@ -523,22 +530,22 @@ void CSWM::BoundaryTransform(CSWM &model) {
         // up
         // model.cswm[2].up[idx][NY-1] = ConvertUPatch2Patch(model, 2, 4, idx, (NX-1)-idx, NY-1, NY-2);
         // model.cswm[2].vp[idx][NY-1] = ConvertVPatch2Patch(model, 2, 4, idx, (NX-1)-idx, NY-1, NY-2);
-        // model.cswm[2].up[idx][NY-1] = -ConvertUPatch2Patch(model, 2, 4, idx, (NX-1)-idx, NY-1, NY-2);
-        // model.cswm[2].vp[idx][NY-1] = -ConvertVPatch2Patch(model, 2, 4, idx, (NX-1)-idx, NY-1, NY-2);
+        // model.cswm[2].up[idx][NY-1] = ConvertUPatch2Patch(model, 2, 4, idx, (NX-1)-idx, NY-1, NY-2);
+        // model.cswm[2].vp[idx][NY-1] = ConvertVPatch2Patch(model, 2, 4, idx, (NX-1)-idx, NY-1, NY-2);
         model.cswm[2].up[idx][NY-1] = -model.cswm[4].up[(NX-1)-idx][NY-2];
         model.cswm[2].vp[idx][NY-1] = -model.cswm[4].vp[(NX-1)-idx][NY-2];
 
         // bottom
         // model.cswm[2].up[idx][0] = ConvertUPatch2Patch(model, 2, 5, idx, (NX-1)-idx, 0, 1);
         // model.cswm[2].vp[idx][0] = ConvertVPatch2Patch(model, 2, 5, idx, (NX-1)-idx, 0, 1);
-        // model.cswm[2].up[idx][0] = -ConvertUPatch2Patch(model, 2, 5, idx, (NX-1)-idx, 0, 1);
-        // model.cswm[2].vp[idx][0] = -ConvertVPatch2Patch(model, 2, 5, idx, (NX-1)-idx, 0, 1);
+        // model.cswm[2].up[idx][0] = ConvertUPatch2Patch(model, 2, 5, idx, (NX-1)-idx, 0, 1);
+        // model.cswm[2].vp[idx][0] = ConvertVPatch2Patch(model, 2, 5, idx, (NX-1)-idx, 0, 1);
         model.cswm[2].up[idx][0] = -model.cswm[5].up[(NX-1)-idx][1];
         model.cswm[2].vp[idx][0] = -model.cswm[5].vp[(NX-1)-idx][1];
     }
 
     // patch 4
-    for (int idx = 0; idx < NX; idx++) {
+    for (int idx = 1; idx < NX-1; idx++) {
         // left
         // model.cswm[3].up[0][idx] = ConvertUPatch2Patch(model, 3, 2, 0, NX-2, idx, idx);
         // model.cswm[3].vp[0][idx] = ConvertVPatch2Patch(model, 3, 2, 0, NX-2, idx, idx);
@@ -554,7 +561,7 @@ void CSWM::BoundaryTransform(CSWM &model) {
         // up
         // model.cswm[3].up[idx][NY-1] = ConvertUPatch2Patch(model, 3, 4, idx, 1, NY-1, (NY-1)-idx);
         // model.cswm[3].vp[idx][NY-1] = ConvertVPatch2Patch(model, 3, 4, idx, 1, NY-1, (NY-1)-idx);
-        // model.cswm[3].up[idx][NY-1] = -ConvertBV2AUPatch2Patch(model, 3, 4, idx, 1, NY-1, (NY-1)-idx);
+        // model.cswm[3].up[idx][NY-1] = ConvertBV2AUPatch2Patch(model, 3, 4, idx, 1, NY-1, (NY-1)-idx);
         // model.cswm[3].vp[idx][NY-1] = ConvertBU2AVPatch2Patch(model, 3, 4, idx, 1, NY-1, (NY-1)-idx);
         model.cswm[3].up[idx][NY-1] = -model.cswm[4].vp[1][(NY-1)-idx];
         model.cswm[3].vp[idx][NY-1] = model.cswm[4].up[1][(NY-1)-idx];
@@ -563,25 +570,25 @@ void CSWM::BoundaryTransform(CSWM &model) {
         // model.cswm[3].up[idx][0] = ConvertUPatch2Patch(model, 3, 5, idx, 1, 0, idx);
         // model.cswm[3].vp[idx][0] = ConvertVPatch2Patch(model, 3, 5, idx, 1, 0, idx);
         // model.cswm[3].up[idx][0] = ConvertBV2AUPatch2Patch(model, 3, 5, idx, 1, 0, idx);
-        // model.cswm[3].vp[idx][0] = -ConvertBU2AVPatch2Patch(model, 3, 5, idx, 1, 0, idx);
+        // model.cswm[3].vp[idx][0] = ConvertBU2AVPatch2Patch(model, 3, 5, idx, 1, 0, idx);
         model.cswm[3].up[idx][0] = model.cswm[5].vp[1][idx];
         model.cswm[3].vp[idx][0] = -model.cswm[5].up[1][idx];
     }
 
     // patch 5
-    for (int idx = 0; idx < NX; idx++) {
+    for (int idx = 1; idx < NX-1; idx++) {
         // left
         // model.cswm[4].up[0][idx] = ConvertUPatch2Patch(model, 4, 3, 0, (NX-1)-idx, idx, NY-2);
         // model.cswm[4].vp[0][idx] = ConvertVPatch2Patch(model, 4, 3, 0, (NX-1)-idx, idx, NY-2);
         // model.cswm[4].up[0][idx] = ConvertBV2AUPatch2Patch(model, 4, 3, 0, (NX-1)-idx, idx, NY-2);
-        // model.cswm[4].vp[0][idx] = -ConvertBU2AVPatch2Patch(model, 4, 3, 0, (NX-1)-idx, idx, NY-2);
+        // model.cswm[4].vp[0][idx] = ConvertBU2AVPatch2Patch(model, 4, 3, 0, (NX-1)-idx, idx, NY-2);
         model.cswm[4].up[0][idx] = model.cswm[3].vp[(NX-1)-idx][NY-2];
         model.cswm[4].vp[0][idx] = -model.cswm[3].up[(NX-1)-idx][NY-2];
 
         // right
         // model.cswm[4].up[NX-1][idx] = ConvertUPatch2Patch(model, 4, 1, NX-1, idx, idx, NY-2);
         // model.cswm[4].vp[NX-1][idx] = ConvertVPatch2Patch(model, 4, 1, NX-1, idx, idx, NY-2);
-        // model.cswm[4].up[NX-1][idx] = -ConvertBV2AUPatch2Patch(model, 4, 1, NX-1, idx, idx, NY-2);
+        // model.cswm[4].up[NX-1][idx] = ConvertBV2AUPatch2Patch(model, 4, 1, NX-1, idx, idx, NY-2);
         // model.cswm[4].vp[NX-1][idx] = ConvertBU2AVPatch2Patch(model, 4, 1, NX-1, idx, idx, NY-2);
         model.cswm[4].up[NX-1][idx] = -model.cswm[1].vp[idx][NY-2];
         model.cswm[4].vp[NX-1][idx] = model.cswm[1].up[idx][NY-2];
@@ -589,8 +596,8 @@ void CSWM::BoundaryTransform(CSWM &model) {
         // up
         // model.cswm[4].up[idx][NY-1] = ConvertUPatch2Patch(model, 4, 2, idx, (NX-1)-idx, NY-1, NY-2);
         // model.cswm[4].vp[idx][NY-1] = ConvertVPatch2Patch(model, 4, 2, idx, (NX-1)-idx, NY-1, NY-2);
-        // model.cswm[4].up[idx][NY-1] = -ConvertUPatch2Patch(model, 4, 2, idx, (NX-1)-idx, NY-1, NY-2);
-        // model.cswm[4].vp[idx][NY-1] = -ConvertVPatch2Patch(model, 4, 2, idx, (NX-1)-idx, NY-1, NY-2);
+        // model.cswm[4].up[idx][NY-1] = ConvertUPatch2Patch(model, 4, 2, idx, (NX-1)-idx, NY-1, NY-2);
+        // model.cswm[4].vp[idx][NY-1] = ConvertVPatch2Patch(model, 4, 2, idx, (NX-1)-idx, NY-1, NY-2);
         model.cswm[4].up[idx][NY-1] = -model.cswm[2].up[(NX-1)-idx][NY-2];
         model.cswm[4].vp[idx][NY-1] = -model.cswm[2].vp[(NX-1)-idx][NY-2];
 
@@ -602,11 +609,11 @@ void CSWM::BoundaryTransform(CSWM &model) {
     }
 
     // patch 6
-    for (int idx = 0; idx < NX; idx++) {
+    for (int idx = 1; idx < NX-1; idx++) {
         // left
         // model.cswm[5].up[0][idx] = ConvertUPatch2Patch(model, 5, 3, 0, idx, idx, 1);
         // model.cswm[5].vp[0][idx] = ConvertVPatch2Patch(model, 5, 3, 0, idx, idx, 1);
-        // model.cswm[5].up[0][idx] = -ConvertBV2AUPatch2Patch(model, 5, 3, 0, idx, idx, 1);
+        // model.cswm[5].up[0][idx] = ConvertBV2AUPatch2Patch(model, 5, 3, 0, idx, idx, 1);
         // model.cswm[5].vp[0][idx] = ConvertBU2AVPatch2Patch(model, 5, 3, 0, idx, idx, 1);
         model.cswm[5].up[0][idx] = -model.cswm[3].vp[idx][1];
         model.cswm[5].vp[0][idx] = model.cswm[3].up[idx][1];
@@ -615,7 +622,7 @@ void CSWM::BoundaryTransform(CSWM &model) {
         // model.cswm[5].up[NX-1][idx] = ConvertUPatch2Patch(model, 5, 1, NX-1, (NX-1)-idx, idx, 1);
         // model.cswm[5].vp[NX-1][idx] = ConvertVPatch2Patch(model, 5, 1, NX-1, (NX-1)-idx, idx, 1);
         // model.cswm[5].up[NX-1][idx] = ConvertBV2AUPatch2Patch(model, 5, 1, NX-1, (NX-1)-idx, idx, 1);
-        // model.cswm[5].vp[NX-1][idx] = -ConvertBU2AVPatch2Patch(model, 5, 1, NX-1, (NX-1)-idx, idx, 1);
+        // model.cswm[5].vp[NX-1][idx] = ConvertBU2AVPatch2Patch(model, 5, 1, NX-1, (NX-1)-idx, idx, 1);
         model.cswm[5].up[NX-1][idx] = model.cswm[1].vp[(NX-1)-idx][1];
         model.cswm[5].vp[NX-1][idx] = -model.cswm[1].up[(NX-1)-idx][1];
 
@@ -628,16 +635,15 @@ void CSWM::BoundaryTransform(CSWM &model) {
         // bottom
         // model.cswm[5].up[idx][0] = ConvertUPatch2Patch(model, 5, 2, idx, (NX-1)-idx, 0, 1);
         // model.cswm[5].vp[idx][0] = ConvertVPatch2Patch(model, 5, 2, idx, (NX-1)-idx, 0, 1);
-        // model.cswm[5].up[idx][0] = -ConvertUPatch2Patch(model, 5, 2, idx, (NX-1)-idx, 0, 1);
-        // model.cswm[5].vp[idx][0] = -ConvertVPatch2Patch(model, 5, 2, idx, (NX-1)-idx, 0, 1);
+        // model.cswm[5].up[idx][0] = ConvertUPatch2Patch(model, 5, 2, idx, (NX-1)-idx, 0, 1);
+        // model.cswm[5].vp[idx][0] = ConvertVPatch2Patch(model, 5, 2, idx, (NX-1)-idx, 0, 1);
         model.cswm[5].up[idx][0] = -model.cswm[2].up[(NX-1)-idx][1];
         model.cswm[5].vp[idx][0] = -model.cswm[2].vp[(NX-1)-idx][1];
     }
     return;
 }
+*/
 
-
-/*
 void CSWM::BoundaryTransform(CSWM &model) {
     // patch 1
     for (int idx = 1; idx < NX-1; idx++) {
@@ -681,18 +687,18 @@ void CSWM::BoundaryTransform(CSWM &model) {
         // model.cswm[1].vp[NX-1][idx] = model.cswm[2].vp[1][idx];
 
         // up
-        model.cswm[1].up[idx][NY-1] = ConvertUPatch2Patch(model, 1, 4, idx, NX-2, NY-1, idx);
-        model.cswm[1].vp[idx][NY-1] = ConvertVPatch2Patch(model, 1, 4, idx, NX-2, NY-1, idx);
-        // model.cswm[1].up[idx][NY-1] = ConvertBV2AUPatch2Patch(model, 1, 4, idx, NX-2, NY-1, idx);
-        // model.cswm[1].vp[idx][NY-1] = -ConvertBU2AVPatch2Patch(model, 1, 4, idx, NX-2, NY-1, idx);
+        // model.cswm[1].up[idx][NY-1] = ConvertUPatch2Patch(model, 1, 4, idx, NX-2, NY-1, idx);
+        // model.cswm[1].vp[idx][NY-1] = ConvertVPatch2Patch(model, 1, 4, idx, NX-2, NY-1, idx);
+        model.cswm[1].up[idx][NY-1] = ConvertBV2AUPatch2Patch(model, 1, 4, idx, NX-2, NY-1, idx);
+        model.cswm[1].vp[idx][NY-1] = ConvertBU2AVPatch2Patch(model, 1, 4, idx, NX-2, NY-1, idx);
         // model.cswm[1].up[idx][NY-1] = model.cswm[4].vp[NX-2][idx];
         // model.cswm[1].vp[idx][NY-1] = -model.cswm[4].up[NX-2][idx];
 
         // bottom
-        model.cswm[1].up[idx][0] = ConvertUPatch2Patch(model, 1, 5, idx, NX-2, 0, (NY-1)-idx);
-        model.cswm[1].vp[idx][0] = ConvertVPatch2Patch(model, 1, 5, idx, NX-2, 0, (NY-1)-idx);
-        // model.cswm[1].up[idx][0] = -ConvertBV2AUPatch2Patch(model, 1, 5, idx, NX-2, 0, (NY-1)-idx);
-        // model.cswm[1].vp[idx][0] = ConvertBU2AVPatch2Patch(model, 1, 5, idx, NX-2, 0, (NY-1)-idx);
+        // model.cswm[1].up[idx][0] = ConvertUPatch2Patch(model, 1, 5, idx, NX-2, 0, (NY-1)-idx);
+        // model.cswm[1].vp[idx][0] = ConvertVPatch2Patch(model, 1, 5, idx, NX-2, 0, (NY-1)-idx);
+        model.cswm[1].up[idx][0] = ConvertBV2AUPatch2Patch(model, 1, 5, idx, NX-2, 0, (NY-1)-idx);
+        model.cswm[1].vp[idx][0] = ConvertBU2AVPatch2Patch(model, 1, 5, idx, NX-2, 0, (NY-1)-idx);
         // model.cswm[1].up[idx][0] = -model.cswm[5].vp[NX-2][(NY-1)-idx];
         // model.cswm[1].vp[idx][0] = model.cswm[5].up[NX-2][(NY-1)-idx];
     }
@@ -712,18 +718,18 @@ void CSWM::BoundaryTransform(CSWM &model) {
         // model.cswm[2].vp[NX-1][idx] = model.cswm[3].vp[1][idx];
 
         // up
+        // model.cswm[2].up[idx][NY-1] = ConvertUPatch2Patch(model, 2, 4, idx, (NX-1)-idx, NY-1, NY-2);
+        // model.cswm[2].vp[idx][NY-1] = ConvertVPatch2Patch(model, 2, 4, idx, (NX-1)-idx, NY-1, NY-2);
         model.cswm[2].up[idx][NY-1] = ConvertUPatch2Patch(model, 2, 4, idx, (NX-1)-idx, NY-1, NY-2);
         model.cswm[2].vp[idx][NY-1] = ConvertVPatch2Patch(model, 2, 4, idx, (NX-1)-idx, NY-1, NY-2);
-        // model.cswm[2].up[idx][NY-1] = -ConvertUPatch2Patch(model, 2, 4, idx, (NX-1)-idx, NY-1, NY-2);
-        // model.cswm[2].vp[idx][NY-1] = -ConvertVPatch2Patch(model, 2, 4, idx, (NX-1)-idx, NY-1, NY-2);
         // model.cswm[2].up[idx][NY-1] = -model.cswm[4].up[(NX-1)-idx][NY-2];
         // model.cswm[2].vp[idx][NY-1] = -model.cswm[4].vp[(NX-1)-idx][NY-2];
 
         // bottom
+        // model.cswm[2].up[idx][0] = ConvertUPatch2Patch(model, 2, 5, idx, (NX-1)-idx, 0, 1);
+        // model.cswm[2].vp[idx][0] = ConvertVPatch2Patch(model, 2, 5, idx, (NX-1)-idx, 0, 1);
         model.cswm[2].up[idx][0] = ConvertUPatch2Patch(model, 2, 5, idx, (NX-1)-idx, 0, 1);
         model.cswm[2].vp[idx][0] = ConvertVPatch2Patch(model, 2, 5, idx, (NX-1)-idx, 0, 1);
-        // model.cswm[2].up[idx][0] = -ConvertUPatch2Patch(model, 2, 5, idx, (NX-1)-idx, 0, 1);
-        // model.cswm[2].vp[idx][0] = -ConvertVPatch2Patch(model, 2, 5, idx, (NX-1)-idx, 0, 1);
         // model.cswm[2].up[idx][0] = -model.cswm[5].up[(NX-1)-idx][1];
         // model.cswm[2].vp[idx][0] = -model.cswm[5].vp[(NX-1)-idx][1];
     }
@@ -743,18 +749,18 @@ void CSWM::BoundaryTransform(CSWM &model) {
         // model.cswm[3].vp[NX-1][idx] = model.cswm[0].vp[1][idx];
 
         // up
-        model.cswm[3].up[idx][NY-1] = ConvertUPatch2Patch(model, 3, 4, idx, 1, NY-1, (NY-1)-idx);
-        model.cswm[3].vp[idx][NY-1] = ConvertVPatch2Patch(model, 3, 4, idx, 1, NY-1, (NY-1)-idx);
-        // model.cswm[3].up[idx][NY-1] = -ConvertBV2AUPatch2Patch(model, 3, 4, idx, 1, NY-1, (NY-1)-idx);
-        // model.cswm[3].vp[idx][NY-1] = ConvertBU2AVPatch2Patch(model, 3, 4, idx, 1, NY-1, (NY-1)-idx);
+        // model.cswm[3].up[idx][NY-1] = ConvertUPatch2Patch(model, 3, 4, idx, 1, NY-1, (NY-1)-idx);
+        // model.cswm[3].vp[idx][NY-1] = ConvertVPatch2Patch(model, 3, 4, idx, 1, NY-1, (NY-1)-idx);
+        model.cswm[3].up[idx][NY-1] = ConvertBV2AUPatch2Patch(model, 3, 4, idx, 1, NY-1, (NY-1)-idx);
+        model.cswm[3].vp[idx][NY-1] = ConvertBU2AVPatch2Patch(model, 3, 4, idx, 1, NY-1, (NY-1)-idx);
         // model.cswm[3].up[idx][NY-1] = -model.cswm[4].vp[1][(NY-1)-idx];
         // model.cswm[3].vp[idx][NY-1] = model.cswm[4].up[1][(NY-1)-idx];
 
         // bottom
-        model.cswm[3].up[idx][0] = ConvertUPatch2Patch(model, 3, 5, idx, 1, 0, idx);
-        model.cswm[3].vp[idx][0] = ConvertVPatch2Patch(model, 3, 5, idx, 1, 0, idx);
-        // model.cswm[3].up[idx][0] = ConvertBV2AUPatch2Patch(model, 3, 5, idx, 1, 0, idx);
-        // model.cswm[3].vp[idx][0] = -ConvertBU2AVPatch2Patch(model, 3, 5, idx, 1, 0, idx);
+        // model.cswm[3].up[idx][0] = ConvertUPatch2Patch(model, 3, 5, idx, 1, 0, idx);
+        // model.cswm[3].vp[idx][0] = ConvertVPatch2Patch(model, 3, 5, idx, 1, 0, idx);
+        model.cswm[3].up[idx][0] = ConvertBV2AUPatch2Patch(model, 3, 5, idx, 1, 0, idx);
+        model.cswm[3].vp[idx][0] = ConvertBU2AVPatch2Patch(model, 3, 5, idx, 1, 0, idx);
         // model.cswm[3].up[idx][0] = model.cswm[5].vp[1][idx];
         // model.cswm[3].vp[idx][0] = -model.cswm[5].up[1][idx];
     }
@@ -762,26 +768,26 @@ void CSWM::BoundaryTransform(CSWM &model) {
     // patch 5
     for (int idx = 1; idx < NX-1; idx++) {
         // left
-        model.cswm[4].up[0][idx] = ConvertUPatch2Patch(model, 4, 3, 0, (NX-1)-idx, idx, NY-2);
-        model.cswm[4].vp[0][idx] = ConvertVPatch2Patch(model, 4, 3, 0, (NX-1)-idx, idx, NY-2);
-        // model.cswm[4].up[0][idx] = ConvertBV2AUPatch2Patch(model, 4, 3, 0, (NX-1)-idx, idx, NY-2);
-        // model.cswm[4].vp[0][idx] = -ConvertBU2AVPatch2Patch(model, 4, 3, 0, (NX-1)-idx, idx, NY-2);
+        // model.cswm[4].up[0][idx] = ConvertUPatch2Patch(model, 4, 3, 0, (NX-1)-idx, idx, NY-2);
+        // model.cswm[4].vp[0][idx] = ConvertVPatch2Patch(model, 4, 3, 0, (NX-1)-idx, idx, NY-2);
+        model.cswm[4].up[0][idx] = ConvertBV2AUPatch2Patch(model, 4, 3, 0, (NX-1)-idx, idx, NY-2);
+        model.cswm[4].vp[0][idx] = ConvertBU2AVPatch2Patch(model, 4, 3, 0, (NX-1)-idx, idx, NY-2);
         // model.cswm[4].up[0][idx] = model.cswm[3].vp[(NX-1)-idx][NY-2];
         // model.cswm[4].vp[0][idx] = -model.cswm[3].up[(NX-1)-idx][NY-2];
 
         // right
-        model.cswm[4].up[NX-1][idx] = ConvertUPatch2Patch(model, 4, 1, NX-1, idx, idx, NY-2);
-        model.cswm[4].vp[NX-1][idx] = ConvertVPatch2Patch(model, 4, 1, NX-1, idx, idx, NY-2);
-        // model.cswm[4].up[NX-1][idx] = -ConvertBV2AUPatch2Patch(model, 4, 1, NX-1, idx, idx, NY-2);
-        // model.cswm[4].vp[NX-1][idx] = ConvertBU2AVPatch2Patch(model, 4, 1, NX-1, idx, idx, NY-2);
+        // model.cswm[4].up[NX-1][idx] = ConvertUPatch2Patch(model, 4, 1, NX-1, idx, idx, NY-2);
+        // model.cswm[4].vp[NX-1][idx] = ConvertVPatch2Patch(model, 4, 1, NX-1, idx, idx, NY-2);
+        model.cswm[4].up[NX-1][idx] = ConvertBV2AUPatch2Patch(model, 4, 1, NX-1, idx, idx, NY-2);
+        model.cswm[4].vp[NX-1][idx] = ConvertBU2AVPatch2Patch(model, 4, 1, NX-1, idx, idx, NY-2);
         // model.cswm[4].up[NX-1][idx] = -model.cswm[1].vp[idx][NY-2];
         // model.cswm[4].vp[NX-1][idx] = model.cswm[1].up[idx][NY-2];
 
         // up
-        model.cswm[4].up[idx][NY-1] = ConvertUPatch2Patch(model, 4, 2, idx, (NX-1)-idx, NY-1, NY-2);
-        model.cswm[4].vp[idx][NY-1] = ConvertVPatch2Patch(model, 4, 2, idx, (NX-1)-idx, NY-1, NY-2);
-        // model.cswm[4].up[idx][NY-1] = -ConvertUPatch2Patch(model, 4, 2, idx, (NX-1)-idx, NY-1, NY-2);
-        // model.cswm[4].vp[idx][NY-1] = -ConvertVPatch2Patch(model, 4, 2, idx, (NX-1)-idx, NY-1, NY-2);
+        // model.cswm[4].up[idx][NY-1] = ConvertUPatch2Patch(model, 4, 2, idx, (NX-1)-idx, NY-1, NY-2);
+        // model.cswm[4].vp[idx][NY-1] = ConvertVPatch2Patch(model, 4, 2, idx, (NX-1)-idx, NY-1, NY-2);
+        // model.cswm[4].up[idx][NY-1] = ConvertUPatch2Patch(model, 4, 2, idx, (NX-1)-idx, NY-1, NY-2);
+        // model.cswm[4].vp[idx][NY-1] = ConvertVPatch2Patch(model, 4, 2, idx, (NX-1)-idx, NY-1, NY-2);
         // model.cswm[4].up[idx][NY-1] = -model.cswm[2].up[(NX-1)-idx][NY-2];
         // model.cswm[4].vp[idx][NY-1] = -model.cswm[2].vp[(NX-1)-idx][NY-2];
 
@@ -797,16 +803,16 @@ void CSWM::BoundaryTransform(CSWM &model) {
         // left
         model.cswm[5].up[0][idx] = ConvertUPatch2Patch(model, 5, 3, 0, idx, idx, 1);
         model.cswm[5].vp[0][idx] = ConvertVPatch2Patch(model, 5, 3, 0, idx, idx, 1);
-        // model.cswm[5].up[0][idx] = -ConvertBV2AUPatch2Patch(model, 5, 3, 0, idx, idx, 1);
+        // model.cswm[5].up[0][idx] = ConvertBV2AUPatch2Patch(model, 5, 3, 0, idx, idx, 1);
         // model.cswm[5].vp[0][idx] = ConvertBU2AVPatch2Patch(model, 5, 3, 0, idx, idx, 1);
         // model.cswm[5].up[0][idx] = -model.cswm[3].vp[idx][1];
         // model.cswm[5].vp[0][idx] = model.cswm[3].up[idx][1];
 
         // right
-        model.cswm[5].up[NX-1][idx] = ConvertUPatch2Patch(model, 5, 1, NX-1, (NX-1)-idx, idx, 1);
-        model.cswm[5].vp[NX-1][idx] = ConvertVPatch2Patch(model, 5, 1, NX-1, (NX-1)-idx, idx, 1);
-        // model.cswm[5].up[NX-1][idx] = ConvertBV2AUPatch2Patch(model, 5, 1, NX-1, (NX-1)-idx, idx, 1);
-        // model.cswm[5].vp[NX-1][idx] = -ConvertBU2AVPatch2Patch(model, 5, 1, NX-1, (NX-1)-idx, idx, 1);
+        // model.cswm[5].up[NX-1][idx] = ConvertUPatch2Patch(model, 5, 1, NX-1, (NX-1)-idx, idx, 1);
+        // model.cswm[5].vp[NX-1][idx] = ConvertVPatch2Patch(model, 5, 1, NX-1, (NX-1)-idx, idx, 1);
+        model.cswm[5].up[NX-1][idx] = ConvertBV2AUPatch2Patch(model, 5, 1, NX-1, (NX-1)-idx, idx, 1);
+        model.cswm[5].vp[NX-1][idx] = ConvertBU2AVPatch2Patch(model, 5, 1, NX-1, (NX-1)-idx, idx, 1);
         // model.cswm[5].up[NX-1][idx] = model.cswm[1].vp[(NX-1)-idx][1];
         // model.cswm[5].vp[NX-1][idx] = -model.cswm[1].up[(NX-1)-idx][1];
 
@@ -817,158 +823,16 @@ void CSWM::BoundaryTransform(CSWM &model) {
         // model.cswm[5].vp[idx][NY-1] = model.cswm[0].vp[idx][1];
 
         // bottom
+        // model.cswm[5].up[idx][0] = ConvertUPatch2Patch(model, 5, 2, idx, (NX-1)-idx, 0, 1);
+        // model.cswm[5].vp[idx][0] = ConvertVPatch2Patch(model, 5, 2, idx, (NX-1)-idx, 0, 1);
         model.cswm[5].up[idx][0] = ConvertUPatch2Patch(model, 5, 2, idx, (NX-1)-idx, 0, 1);
         model.cswm[5].vp[idx][0] = ConvertVPatch2Patch(model, 5, 2, idx, (NX-1)-idx, 0, 1);
-        // model.cswm[5].up[idx][0] = -ConvertUPatch2Patch(model, 5, 2, idx, (NX-1)-idx, 0, 1);
-        // model.cswm[5].vp[idx][0] = -ConvertVPatch2Patch(model, 5, 2, idx, (NX-1)-idx, 0, 1);
         // model.cswm[5].up[idx][0] = -model.cswm[2].up[(NX-1)-idx][1];
         // model.cswm[5].vp[idx][0] = -model.cswm[2].vp[(NX-1)-idx][1];
     }
     return;
 }
-*/
-/*
-void CSWM::BoundaryProcess(CSWM &model) {
-    // patch 1
-    for (int idx = 0; idx < NX; idx++) {
-        // left
-        model.cswm[0].hp[0][idx] = model.cswm[3].hp[NX-2][idx];
-        // model.cswm[0].up[0][idx] = model.cswm[3].up[NX-2][idx];
-        // model.cswm[0].vp[0][idx] = model.cswm[3].vp[NX-2][idx];
 
-        // right
-        model.cswm[0].hp[NX-1][idx] = model.cswm[1].hp[1][idx];
-        // model.cswm[0].up[NX-1][idx] = model.cswm[1].up[1][idx];
-        // model.cswm[0].vp[NX-1][idx] = model.cswm[1].vp[1][idx];
-
-        // up
-        model.cswm[0].hp[idx][NY-1] = model.cswm[4].hp[idx][1];
-        // model.cswm[0].up[idx][NY-1] = model.cswm[4].up[idx][1];
-        // model.cswm[0].vp[idx][NY-1] = model.cswm[4].vp[idx][1];
-
-        // bottom
-        model.cswm[0].hp[idx][0] = model.cswm[5].hp[idx][NY-2];
-        // model.cswm[0].up[idx][0] = model.cswm[5].up[idx][NY-2];
-        // model.cswm[0].vp[idx][0] = model.cswm[5].vp[idx][NY-2];
-    }
-
-    // patch 2
-    for (int idx = 0; idx < NX; idx++) {
-        // left
-        model.cswm[1].hp[0][idx] = model.cswm[0].hp[NX-2][idx];
-        // model.cswm[1].up[0][idx] = model.cswm[0].up[NX-2][idx];
-        // model.cswm[1].vp[0][idx] = model.cswm[0].vp[NX-2][idx];
-
-        // right
-        model.cswm[1].hp[NX-1][idx] = model.cswm[2].hp[1][idx];
-        // model.cswm[1].up[NX-1][idx] = model.cswm[2].up[1][idx];
-        // model.cswm[1].vp[NX-1][idx] = model.cswm[2].vp[1][idx];
-
-        // up
-        model.cswm[1].hp[idx][NY-1] = model.cswm[4].hp[NX-2][idx];
-        // model.cswm[1].up[idx][NY-1] = model.cswm[4].vp[NX-2][idx];
-        // model.cswm[1].vp[idx][NY-1] = -model.cswm[4].up[NX-2][idx];
-
-        // bottom
-        model.cswm[1].hp[idx][0] = model.cswm[5].hp[NX-2][(NY-1)-idx];
-        // model.cswm[1].up[idx][0] = -model.cswm[5].vp[NX-2][(NY-1)-idx];
-        // model.cswm[1].vp[idx][0] = model.cswm[5].up[NX-2][(NY-1)-idx];
-    }
-
-    // patch 3
-    for (int idx = 0; idx < NX; idx++) {
-        // left
-        model.cswm[2].hp[0][idx] = model.cswm[1].hp[NX-2][idx];
-        // model.cswm[2].up[0][idx] = model.cswm[1].up[NX-2][idx];
-        // model.cswm[2].vp[0][idx] = model.cswm[1].vp[NX-2][idx];
-
-        // right
-        model.cswm[2].hp[NX-1][idx] = model.cswm[3].hp[1][idx];
-        // model.cswm[2].up[NX-1][idx] = model.cswm[3].up[1][idx];
-        // model.cswm[2].vp[NX-1][idx] = model.cswm[3].vp[1][idx];
-
-        // up
-        model.cswm[2].hp[idx][NY-1] = model.cswm[4].hp[(NX-1)-idx][NY-2];
-        // model.cswm[2].up[idx][NY-1] = -model.cswm[4].up[(NX-1)-idx][NY-2];
-        // model.cswm[2].vp[idx][NY-1] = -model.cswm[4].vp[(NX-1)-idx][NY-2];
-
-        // bottom
-        model.cswm[2].hp[idx][0] = model.cswm[5].hp[(NX-1)-idx][1];
-        // model.cswm[2].up[idx][0] = -model.cswm[5].up[(NX-1)-idx][1];
-        // model.cswm[2].vp[idx][0] = -model.cswm[5].vp[(NX-1)-idx][1];
-    }
-
-    // patch 4
-    for (int idx = 0; idx < NX; idx++) {
-        // left
-        model.cswm[3].hp[0][idx] = model.cswm[2].hp[NX-2][idx];
-        // model.cswm[3].up[0][idx] = model.cswm[2].up[NX-2][idx];
-        // model.cswm[3].vp[0][idx] = model.cswm[2].vp[NX-2][idx];
-
-        // right
-        model.cswm[3].hp[NX-1][idx] = model.cswm[0].hp[1][idx];
-        // model.cswm[3].up[NX-1][idx] = model.cswm[0].up[1][idx];
-        // model.cswm[3].vp[NX-1][idx] = model.cswm[0].vp[1][idx];
-
-        // up
-        model.cswm[3].hp[idx][NY-1] = model.cswm[4].hp[1][(NY-1)-idx];
-        // model.cswm[3].up[idx][NY-1] = -model.cswm[4].vp[1][(NY-1)-idx];
-        // model.cswm[3].vp[idx][NY-1] = model.cswm[4].up[1][(NY-1)-idx];
-
-        // bottom
-        model.cswm[3].hp[idx][0] = model.cswm[5].hp[1][idx];
-        // model.cswm[3].up[idx][0] = model.cswm[5].vp[1][idx];
-        // model.cswm[3].vp[idx][0] = -model.cswm[5].up[1][idx];
-    }
-
-    // patch 5
-    for (int idx = 0; idx < NX; idx++) {
-        // left
-        model.cswm[4].hp[0][idx] = model.cswm[3].hp[(NX-1)-idx][NY-2];
-        // model.cswm[4].up[0][idx] = model.cswm[3].vp[(NX-1)-idx][NY-2];
-        // model.cswm[4].vp[0][idx] = -model.cswm[3].up[(NX-1)-idx][NY-2];
-
-        // right
-        model.cswm[4].hp[NX-1][idx] = model.cswm[1].hp[idx][NY-2];
-        // model.cswm[4].up[NX-1][idx] = -model.cswm[1].vp[idx][NY-2];
-        // model.cswm[4].vp[NX-1][idx] = model.cswm[1].up[idx][NY-2];
-
-        // up
-        model.cswm[4].hp[idx][NY-1] = model.cswm[2].hp[(NX-1)-idx][NY-2];
-        // model.cswm[4].up[idx][NY-1] = -model.cswm[2].up[(NX-1)-idx][NY-2];
-        // model.cswm[4].vp[idx][NY-1] = -model.cswm[2].vp[(NX-1)-idx][NY-2];
-
-        // bottom
-        model.cswm[4].hp[idx][0] = model.cswm[0].hp[idx][NY-2];
-        // model.cswm[4].up[idx][0] = model.cswm[0].up[idx][NY-2];
-        // model.cswm[4].vp[idx][0] = model.cswm[0].vp[idx][NY-2];
-    }
-
-    // patch 6
-    for (int idx = 0; idx < NX; idx++) {
-        // left
-        model.cswm[5].hp[0][idx] = model.cswm[3].hp[idx][1];
-        // model.cswm[5].up[0][idx] = -model.cswm[3].vp[idx][1];
-        // model.cswm[5].vp[0][idx] = model.cswm[3].up[idx][1];
-
-        // right
-        model.cswm[5].hp[NX-1][idx] = model.cswm[1].hp[(NX-1)-idx][1];
-        // model.cswm[5].up[NX-1][idx] = model.cswm[1].vp[(NX-1)-idx][1];
-        // model.cswm[5].vp[NX-1][idx] = -model.cswm[1].up[(NX-1)-idx][1];
-
-        // up
-        model.cswm[5].hp[idx][NY-1] = model.cswm[0].hp[idx][1];
-        // model.cswm[5].up[idx][NY-1] = model.cswm[0].up[idx][1];
-        // model.cswm[5].vp[idx][NY-1] = model.cswm[0].vp[idx][1];
-
-        // bottom
-        model.cswm[5].hp[idx][0] = model.cswm[2].hp[(NX-1)-idx][1];
-        // model.cswm[5].up[idx][0] = -model.cswm[2].up[(NX-1)-idx][1];
-        // model.cswm[5].vp[idx][0] = -model.cswm[2].vp[(NX-1)-idx][1];
-    }
-    return;
-}
-*/
 
 double CSWM::ConvertUPatch2Sphere(CSWM &model, int p, int i, int j) {
     return (model.gUpper_u[i][j][0] * model.cswm[p].A_u[i][j][0] + model.gUpper_u[i][j][1] * model.cswm[p].A_u[i][j][2]) * model.cswm[p].u[i][j] + 
@@ -991,11 +855,19 @@ double CSWM::ConvertVSphere2Patch(CSWM &model, int p, int i, int j) {
 }
 
 double CSWM::ConvertUPatch2Patch(CSWM &model, int p1, int p2, int i1, int i2, int j1, int j2) {
-    int C[2][2];
-    int D[2][2];
-    int final[2][2];
-    int gLowerA[2][2], gUpperB[2][2], AInverseA[2][2], AB[2][2];
+    double C[2][2];
+    double D[2][2];
+    double final[2][2];
+    double gLowerA[2][2], gUpperB[2][2], AInverseA[2][2], AB[2][2];
     int count = 0;
+
+    // init
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 2; j++) {
+            C[i][j] = D[i][j] = final[i][j] = gLowerA[i][j] = gUpperB[i][j] = AInverseA[i][j] = AB[i][j] = 0.;
+        }
+    }
+
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 2; j++) {
             gLowerA[i][j] = model.gLower_u[i1][j1][count];
@@ -1007,32 +879,36 @@ double CSWM::ConvertUPatch2Patch(CSWM &model, int p1, int p2, int i1, int i2, in
     }
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 2; j++) {   
-            C[i][j] = 0;
-            D[i][j] = 0;
             for (int k = 0; k < 2; k++) {
                 C[i][j] += gLowerA[i][k] * AInverseA[k][j];
-                D[i][j] += AB[i][k] * gUpperB[i][j];
+                D[i][j] += AB[i][k] * gUpperB[k][j];
             }
         }
     }
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 2; j++) {  
-            final[i][j] = 0;
             for (int k = 0; k < 2; k++) {
-                final[i][j] += C[i][k] * D[i][j];
+                final[i][j] += C[i][k] * D[k][j];
             }
         }
     }
-    return final[0][0] * model.cswm[p2].u[i2][j2] + 
-           final[0][1] * 0.25*(model.cswm[p2].v[i2][j2+1] + model.cswm[p2].v[i2][j2] + model.cswm[p2].v[i2-1][j2+1] + model.cswm[p2].v[i2-1][j2]);
+    return final[0][0] * model.cswm[p2].up[i2][j2] + final[0][1] * 0.25*(model.cswm[p2].vp[i2][j2+1] + model.cswm[p2].vp[i2][j2] + model.cswm[p2].vp[i2-1][j2+1] + model.cswm[p2].vp[i2-1][j2]);
 }
 
 double CSWM::ConvertVPatch2Patch(CSWM &model, int p1, int p2, int i1, int i2, int j1, int j2) {
-    int C[2][2];
-    int D[2][2];
-    int final[2][2];
-    int gLowerA[2][2], gUpperB[2][2], AInverseA[2][2], AB[2][2];
+    double C[2][2];
+    double D[2][2];
+    double final[2][2];
+    double gLowerA[2][2], gUpperB[2][2], AInverseA[2][2], AB[2][2];
     int count = 0;
+
+    // init
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 2; j++) {
+            C[i][j] = D[i][j] = final[i][j] = gLowerA[i][j] = gUpperB[i][j] = AInverseA[i][j] = AB[i][j] = 0.;
+        }
+    }
+
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 2; j++) {
             gLowerA[i][j] = model.gLower_v[i1][j1][count];
@@ -1044,68 +920,132 @@ double CSWM::ConvertVPatch2Patch(CSWM &model, int p1, int p2, int i1, int i2, in
     }
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 2; j++) {   
-            C[i][j] = 0;
-            D[i][j] = 0;
             for (int k = 0; k < 2; k++) {
                 C[i][j] += gLowerA[i][k] * AInverseA[k][j];
-                D[i][j] += AB[i][k] * gUpperB[i][j];
+                D[i][j] += AB[i][k] * gUpperB[k][j];
             }
         }
     }
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 2; j++) {  
-            final[i][j] = 0;
             for (int k = 0; k < 2; k++) {
-                final[i][j] += C[i][k] * D[i][j];
+                final[i][j] += C[i][k] * D[k][j];
             }
         }
     }
-    return final[1][0] * 0.25*(model.cswm[p2].u[i2+1][j2] + model.cswm[p2].u[i2][j2] + model.cswm[p2].u[i2+1][j2-1] + model.cswm[p2].u[i2][j2-1]) + 
-           final[1][1] * model.cswm[p2].v[i2][j2];
+    return final[1][0] * 0.25*(model.cswm[p2].up[i2+1][j2] + model.cswm[p2].up[i2][j2] + model.cswm[p2].up[i2+1][j2-1] + model.cswm[p2].up[i2][j2-1]) + final[1][1] * model.cswm[p2].vp[i2][j2];
 }
 
-// double CSWM::ConvertBV2AUPatch2Patch(CSWM &model, int p1, int p2, int i1, int i2, int j1, int j2) {
-//     double U = (model.cswm[p1].AInverse_u[i1][j1][2] * model.cswm[p2].A_v[i2][j2][0] + model.cswm[p1].AInverse_u[i1][j1][3] * model.cswm[p2].A_v[i2][j2][2]) * 
-//                 0.25*(model.cswm[p2].u[i2+1][j2] + model.cswm[p2].u[i2][j2] + model.cswm[p2].u[i2+1][j2-1] + model.cswm[p2].u[i2][j2-1]);
-//     double V = (model.cswm[p1].AInverse_u[i1][j1][2] * model.cswm[p2].A_v[i2][j2][1] + model.cswm[p1].AInverse_u[i1][j1][3] * model.cswm[p2].A_v[i2][j2][3]) * model.cswm[p2].v[i2][j2];
-//     return U + V;
-// }
+double CSWM::ConvertBV2AUPatch2Patch(CSWM &model, int p1, int p2, int i1, int i2, int j1, int j2) {
+    double C[2][2];
+    double D[2][2];
+    double final[2][2];
+    double gLowerA[2][2], gUpperB[2][2], AInverseA[2][2], AB[2][2];
+    int count = 0;
 
-// double CSWM::ConvertBU2AVPatch2Patch(CSWM &model, int p1, int p2, int i1, int i2, int j1, int j2) {
-//     double U = (model.cswm[p1].AInverse_v[i1][j1][0] * model.cswm[p2].A_u[i2][j2][0] + model.cswm[p1].AInverse_v[i1][j1][1] * model.cswm[p2].A_u[i2][j2][2]) * model.cswm[p2].u[i2][j2];
-//     double V = (model.cswm[p1].AInverse_v[i1][j1][0] * model.cswm[p2].A_u[i2][j2][1] + model.cswm[p1].AInverse_v[i1][j1][1] * model.cswm[p2].A_u[i2][j2][3]) * 
-//                 0.25*(model.cswm[p2].v[i2][j2+1] + model.cswm[p2].v[i2][j2] + model.cswm[p2].v[i2-1][j2+1] + model.cswm[p2].v[i2-1][j2]);
-//     return U + V;
-// }
+    // init
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 2; j++) {
+            C[i][j] = D[i][j] = final[i][j] = gLowerA[i][j] = gUpperB[i][j] = AInverseA[i][j] = AB[i][j] = 0.;
+        }
+    }
+
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 2; j++) {
+            gLowerA[i][j] = model.gLower_u[i1][j1][count];
+            gUpperB[i][j] = model.gUpper_v[i2][j2][count];
+            AInverseA[i][j] = model.cswm[p1].AInverse_u[i1][j1][count];
+            AB[i][j] = model.cswm[p2].A_v[i2][j2][count];
+            count++;
+        }
+    }
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 2; j++) {   
+            for (int k = 0; k < 2; k++) {
+                C[i][j] += gLowerA[i][k] * AInverseA[k][j];
+                D[i][j] += AB[i][k] * gUpperB[k][j];
+            }
+        }
+    }
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 2; j++) {  
+            for (int k = 0; k < 2; k++) {
+                final[i][j] += C[i][k] * D[k][j];
+            }
+        }
+    }
+    return final[0][0] * model.cswm[p2].up[i2][j2] + final[0][1] * 0.25*(model.cswm[p2].vp[i2][j2+1] + model.cswm[p2].vp[i2][j2] + model.cswm[p2].vp[i2-1][j2+1] + model.cswm[p2].vp[i2-1][j2]);
+}
+
+double CSWM::ConvertBU2AVPatch2Patch(CSWM &model, int p1, int p2, int i1, int i2, int j1, int j2) {
+    double C[2][2];
+    double D[2][2];
+    double final[2][2];
+    double gLowerA[2][2], gUpperB[2][2], AInverseA[2][2], AB[2][2];
+    int count = 0;
+
+    // init
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 2; j++) {
+            C[i][j] = D[i][j] = final[i][j] = gLowerA[i][j] = gUpperB[i][j] = AInverseA[i][j] = AB[i][j] = 0.;
+        }
+    }
+
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 2; j++) {
+            gLowerA[i][j] = model.gLower_v[i1][j1][count];
+            gUpperB[i][j] = model.gUpper_u[i2][j2][count];
+            AInverseA[i][j] = model.cswm[p1].AInverse_v[i1][j1][count];
+            AB[i][j] = model.cswm[p2].A_u[i2][j2][count];
+            count++;
+        }
+    }
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 2; j++) {   
+            for (int k = 0; k < 2; k++) {
+                C[i][j] += gLowerA[i][k] * AInverseA[k][j];
+                D[i][j] += AB[i][k] * gUpperB[k][j];
+            }
+        }
+    }
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 2; j++) {  
+            for (int k = 0; k < 2; k++) {
+                final[i][j] += C[i][k] * D[k][j];
+            }
+        }
+    }
+    return final[1][0] * 0.25*(model.cswm[p2].up[i2+1][j2] + model.cswm[p2].up[i2][j2] + model.cswm[p2].up[i2+1][j2-1] + model.cswm[p2].up[i2][j2-1]) + final[1][1] * model.cswm[p2].vp[i2][j2];
+}
 
 
 void CSWM::ExtrapolationBoundary(CSWM &model) {
     for (int p = 0; p < 6; p++) {
         for (int idx = 0; idx < NX; idx++) {
             // left
-            model.cswm[p].up[0][idx] = Extrapolate(model.cswm[p].x_u[1][idx], model.cswm[p].x_u[2][idx], model.cswm[p].up[1][idx], model.cswm[p].up[2][idx], model.cswm[0].x_u[0][idx]);
-            model.cswm[p].vp[0][idx] = Extrapolate(model.cswm[p].x_v[1][idx], model.cswm[p].x_v[2][idx], model.cswm[p].vp[1][idx], model.cswm[p].vp[2][idx], model.cswm[0].x_v[0][idx]);
+            model.cswm[p].up[0][idx] = ExtrapolateRight(model.cswm[p].x_u[1][idx], model.cswm[p].x_u[2][idx], model.cswm[p].up[1][idx], model.cswm[p].up[2][idx], model.cswm[p].x_u[0][idx]);
+            model.cswm[p].vp[0][idx] = ExtrapolateRight(model.cswm[p].x_v[1][idx], model.cswm[p].x_v[2][idx], model.cswm[p].vp[1][idx], model.cswm[p].vp[2][idx], model.cswm[p].x_v[0][idx]);
 
             // right
-            model.cswm[p].up[NX-1][idx] = Extrapolate(model.cswm[p].x_u[NX-2][idx], model.cswm[p].x_u[NX-3][idx], model.cswm[p].up[NX-2][idx], model.cswm[p].up[NX-3][idx], model.cswm[0].x_u[NX-1][idx]);
-            model.cswm[p].vp[NX-1][idx] = Extrapolate(model.cswm[p].x_v[NX-2][idx], model.cswm[p].x_v[NX-3][idx], model.cswm[p].vp[NX-2][idx], model.cswm[p].vp[NX-3][idx], model.cswm[0].x_v[NX-1][idx]);
+            model.cswm[p].up[NX-1][idx] = ExtrapolateRight(model.cswm[p].x_u[NX-3][idx], model.cswm[p].x_u[NX-2][idx], model.cswm[p].up[NX-3][idx], model.cswm[p].up[NX-2][idx], model.cswm[p].x_u[NX-1][idx]);
+            model.cswm[p].vp[NX-1][idx] = ExtrapolateRight(model.cswm[p].x_v[NX-3][idx], model.cswm[p].x_v[NX-2][idx], model.cswm[p].vp[NX-3][idx], model.cswm[p].vp[NX-2][idx], model.cswm[p].x_v[NX-1][idx]);
 
 
             // up
-            model.cswm[p].up[idx][NX-1] = Extrapolate(model.cswm[p].y_u[idx][NX-2], model.cswm[p].y_u[idx][NX-3], model.cswm[p].up[idx][NX-2], model.cswm[p].up[idx][NX-3], model.cswm[0].y_u[idx][0]);
-            model.cswm[p].vp[idx][NX-1] = Extrapolate(model.cswm[p].y_v[idx][NX-2], model.cswm[p].y_v[idx][NX-3], model.cswm[p].vp[idx][NX-2], model.cswm[p].vp[idx][NX-3], model.cswm[0].y_v[idx][0]);
+            model.cswm[p].up[idx][NX-1] = ExtrapolateRight(model.cswm[p].y_u[idx][NX-3], model.cswm[p].y_u[idx][NX-2], model.cswm[p].up[idx][NX-3], model.cswm[p].up[idx][NX-2], model.cswm[p].y_u[idx][NX-1]);
+            model.cswm[p].vp[idx][NX-1] = ExtrapolateRight(model.cswm[p].y_v[idx][NX-3], model.cswm[p].y_v[idx][NX-2], model.cswm[p].vp[idx][NX-3], model.cswm[p].vp[idx][NX-2], model.cswm[p].y_v[idx][NX-1]);
 
             // bottom
-            model.cswm[p].up[idx][0] = Extrapolate(model.cswm[p].y_u[idx][1], model.cswm[p].y_u[idx][2], model.cswm[p].up[idx][1], model.cswm[p].up[idx][2], model.cswm[0].y_u[idx][0]);
-            model.cswm[p].vp[idx][0] = Extrapolate(model.cswm[p].y_v[idx][1], model.cswm[p].y_v[idx][2], model.cswm[p].vp[idx][1], model.cswm[p].vp[idx][2], model.cswm[0].y_v[idx][0]);
+            model.cswm[p].up[idx][0] = ExtrapolateRight(model.cswm[p].y_u[idx][1], model.cswm[p].y_u[idx][2], model.cswm[p].up[idx][1], model.cswm[p].up[idx][2], model.cswm[p].y_u[idx][0]);
+            model.cswm[p].vp[idx][0] = ExtrapolateRight(model.cswm[p].y_v[idx][1], model.cswm[p].y_v[idx][2], model.cswm[p].vp[idx][1], model.cswm[p].vp[idx][2], model.cswm[p].y_v[idx][0]);
         }
     }
 }
 
+double CSWM::ExtrapolateLeft(double x1, double x2, double y1, double y2, double x) { 
+    return y2 - (y2-y1) * (x2-x) / (x2-x1);
+}
 
-double CSWM::Extrapolate(double x1, double x2, double y1, double y2, double x) {
-    if (x1 <0) x1 += 2 * M_PI;
-    if (x2 < 0) x1 += 2 * M_PI;
-    if (x < 0) x += 2 * M_PI;
-    return y2 - (y2-y1) * (x2-x) / (x2 - x1);
+double CSWM::ExtrapolateRight(double x1, double x2, double y1, double y2, double x) { 
+    return y1 + (y2-y1) * (x-x1) / (x2-x1);
 }

@@ -60,24 +60,51 @@ void Output::output_parameter(CSWM &model) {
     std::fstream foutlat_withghost;
     std::fstream foutx;
     std::fstream fouty;
+    std::fstream foutx_withghost;
+    std::fstream fouty_withghost;
+    std::fstream foutx_u;
+    std::fstream foutx_v;
+    std::fstream fouty_u;
+    std::fstream fouty_v;
+    std::fstream foutx_u_withghost;
+    std::fstream foutx_v_withghost;
+    std::fstream fouty_u_withghost;
+    std::fstream fouty_v_withghost;
+    
     // std::fstream foutA;
     // std::fstream foutAInverse;
     // std::fstream foutA_u;
     // std::fstream foutAInverse_u;
     // std::fstream foutA_v;
     // std::fstream foutAInverse_v;
-    foutlon.open("../outputs/lon.txt", std::ios::out);
-    foutlat.open("../outputs/lat.txt", std::ios::out);
-    foutlon_withghost.open("../outputs/lon_withghost.txt", std::ios::out);
-    foutlat_withghost.open("../outputs/lat_withghost.txt", std::ios::out);
-    foutx.open("../outputs/x.txt", std::ios::out);
-    fouty.open("../outputs/y.txt", std::ios::out);
+    std::fstream foutsqrtG, foutsqrtG_u, foutsqrtG_v;
+    
+    foutlon.open("../outputs/grid/lon.txt", std::ios::out);
+    foutlat.open("../outputs/grid/lat.txt", std::ios::out);
+    foutlon_withghost.open("../outputs/grid/lon_withghost.txt", std::ios::out);
+    foutlat_withghost.open("../outputs/grid/lat_withghost.txt", std::ios::out);
+    foutx.open("../outputs/grid/x.txt", std::ios::out);
+    fouty.open("../outputs/grid/y.txt", std::ios::out);
+    foutx_withghost.open("../outputs/grid/x_withghost.txt", std::ios::out);
+    fouty_withghost.open("../outputs/grid/y_withghost.txt", std::ios::out);
+    foutx_u.open("../outputs/grid/x_u.txt", std::ios::out);
+    fouty_u.open("../outputs/grid/y_u.txt", std::ios::out);
+    foutx_v.open("../outputs/grid/x_v.txt", std::ios::out);
+    fouty_v.open("../outputs/grid/y_v.txt", std::ios::out);
+    foutx_u_withghost.open("../outputs/grid/x_u_withghost.txt", std::ios::out);
+    fouty_u_withghost.open("../outputs/grid/y_u_withghost.txt", std::ios::out);
+    foutx_v_withghost.open("../outputs/grid/x_v_withghost.txt", std::ios::out);
+    fouty_v_withghost.open("../outputs/grid/y_v_withghost.txt", std::ios::out);
+
     // foutA.open("../outputs/ConvertMatrix/A.txt", std::ios::out);
     // foutAInverse.open("../outputs/ConvertMatrix/AInverse.txt", std::ios::out);
     // foutA_u.open("../outputs/ConvertMatrix/A_u.txt", std::ios::out);
     // foutAInverse_u.open("../outputs/ConvertMatrix/AInverse_u.txt", std::ios::out);
     // foutA_v.open("../outputs/ConvertMatrix/A_v.txt", std::ios::out);
     // foutAInverse_v.open("../outputs/ConvertMatrix/AInverse_v.txt", std::ios::out);
+    foutsqrtG.open("../outputs/grid/sqrtG.txt", std::ios::out);
+    foutsqrtG_u.open("../outputs/grid/sqrtG_u.txt", std::ios::out);
+    foutsqrtG_v.open("../outputs/grid/sqrtG_v.txt", std::ios::out);
 
     for (int p = 0; p < 6; p++) {
         for (int i = 1; i < NX-1; i++) {
@@ -86,6 +113,10 @@ void Output::output_parameter(CSWM &model) {
                 foutlat << model.cswm[p].lat[i][j] << " ";
                 foutx << model.cswm[p].x[i][j] << " ";
                 fouty << model.cswm[p].y[i][j] << " ";
+                foutx_u << model.cswm[p].x_u[i][j] << " ";
+                fouty_u << model.cswm[p].y_u[i][j] << " ";
+                foutx_v << model.cswm[p].x_v[i][j] << " ";
+                fouty_v << model.cswm[p].y_v[i][j] << " ";
 
                 // foutA << model.cswm[p].A[i][j] << " ";
                 // foutAInverse << model.cswm[p].AInverse[i][j] << " ";
@@ -96,15 +127,31 @@ void Output::output_parameter(CSWM &model) {
             }
         }
     }
+    
 
     for (int p = 0; p < 6; p++) {
         for (int i = 0; i < NX; i++) {
             for (int j = 0; j < NY; j++) { 
                 foutlon_withghost << model.cswm[p].lon[i][j] << " ";
                 foutlat_withghost << model.cswm[p].lat[i][j] << " ";
+                foutx_withghost << model.cswm[p].x[i][j] << " ";
+                fouty_withghost << model.cswm[p].y[i][j] << " ";
+                foutx_u_withghost << model.cswm[p].x_u[i][j] << " ";
+                fouty_u_withghost << model.cswm[p].y_u[i][j] << " ";
+                foutx_v_withghost << model.cswm[p].x_v[i][j] << " ";
+                fouty_v_withghost << model.cswm[p].y_v[i][j] << " ";
             }
         }
     }
+
+    for (int i = 0; i < NX; i++) {
+        for (int j = 0; j < NY; j++) {
+            foutsqrtG << model.sqrtG[i][j] << " ";
+            foutsqrtG_u << model.sqrtG_u[i][j] << " ";
+            foutsqrtG_v << model.sqrtG_v[i][j] << " ";
+        }
+    }
+
     return;
 }
 
