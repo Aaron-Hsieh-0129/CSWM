@@ -14,13 +14,13 @@
 #define yMin (-45.)
 #define NX ((int) (xMax - xMin)/DX+2)
 #define NY ((int) (yMax - yMin)/DY+2)
-#define Kx (65000.)
-#define Ky (65000.)
+#define Kx (60000.)
+#define Ky (60000.)
 #define TIMETS (0.06)
 
 #define DT (360.)
 #define D2T (2. * DT)
-#define TIMEEND (24. * 86400*3)
+#define TIMEEND (24. * 86400*6)
 #define OUTPUTINTERVAL (10)
 
 // #define HorizontalAdvection

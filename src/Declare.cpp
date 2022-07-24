@@ -786,8 +786,8 @@ void CSWM::BoundaryTransform(CSWM &model) {
         // up
         // model.cswm[4].up[idx][NY-1] = ConvertUPatch2Patch(model, 4, 2, idx, (NX-1)-idx, NY-1, NY-2);
         // model.cswm[4].vp[idx][NY-1] = ConvertVPatch2Patch(model, 4, 2, idx, (NX-1)-idx, NY-1, NY-2);
-        // model.cswm[4].up[idx][NY-1] = ConvertUPatch2Patch(model, 4, 2, idx, (NX-1)-idx, NY-1, NY-2);
-        // model.cswm[4].vp[idx][NY-1] = ConvertVPatch2Patch(model, 4, 2, idx, (NX-1)-idx, NY-1, NY-2);
+        model.cswm[4].up[idx][NY-1] = ConvertUPatch2Patch(model, 4, 2, idx, (NX-1)-idx, NY-1, NY-2);
+        model.cswm[4].vp[idx][NY-1] = ConvertVPatch2Patch(model, 4, 2, idx, (NX-1)-idx, NY-1, NY-2);
         // model.cswm[4].up[idx][NY-1] = -model.cswm[2].up[(NX-1)-idx][NY-2];
         // model.cswm[4].vp[idx][NY-1] = -model.cswm[2].vp[(NX-1)-idx][NY-2];
 
@@ -801,10 +801,10 @@ void CSWM::BoundaryTransform(CSWM &model) {
     // patch 6
     for (int idx = 1; idx < NX-1; idx++) {
         // left
-        model.cswm[5].up[0][idx] = ConvertUPatch2Patch(model, 5, 3, 0, idx, idx, 1);
-        model.cswm[5].vp[0][idx] = ConvertVPatch2Patch(model, 5, 3, 0, idx, idx, 1);
-        // model.cswm[5].up[0][idx] = ConvertBV2AUPatch2Patch(model, 5, 3, 0, idx, idx, 1);
-        // model.cswm[5].vp[0][idx] = ConvertBU2AVPatch2Patch(model, 5, 3, 0, idx, idx, 1);
+        // model.cswm[5].up[0][idx] = ConvertUPatch2Patch(model, 5, 3, 0, idx, idx, 1);
+        // model.cswm[5].vp[0][idx] = ConvertVPatch2Patch(model, 5, 3, 0, idx, idx, 1);
+        model.cswm[5].up[0][idx] = ConvertBV2AUPatch2Patch(model, 5, 3, 0, idx, idx, 1);
+        model.cswm[5].vp[0][idx] = ConvertBU2AVPatch2Patch(model, 5, 3, 0, idx, idx, 1);
         // model.cswm[5].up[0][idx] = -model.cswm[3].vp[idx][1];
         // model.cswm[5].vp[0][idx] = model.cswm[3].up[idx][1];
 
