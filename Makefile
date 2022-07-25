@@ -10,7 +10,7 @@ all	: bin/cswm
 # bin/cswm	: main.o Declare.o Init.o Iteration.o Outputfile.o Plot.o
 # 			$(CC) $(OPTFLAGS) main.o Declare.o Init.o Outputfile.o Iteration.o Plot.o -I /usr/local/include/matplotlib-cpp-master/ -I /Users/Aaron/miniconda3/lib/python3.8/ -I /Users/Aaron/miniconda3/lib/python3.8/site-packages/numpy/core/include/ -L /usr/local/Frameworks/Python.framework/Versions/3.9/lib -lpython3.9 -o bin/vvm2d
 bin/cswm	: main.o Declare.o Init.o Iteration.o Output.o
-			$(CC) $(OPTFLAGS) main.o Declare.o Init.o Iteration.o Output.o -o bin/cswm
+			$(CC) $(OPTFLAGS) main.o Declare.o Init.o Iteration.o Output.o -o bin/cswm 
 main.o 	   	: src/main.cpp
 			$(CC) $(CFLAGS) $(OPTFLAGS) $< -o $@
 Declare.o	: src/Declare.cpp

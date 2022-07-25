@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include <ctime>
-#include <thread>
+#include <omp.h>
 #include "Const.hpp"
 
 class CSWM {
