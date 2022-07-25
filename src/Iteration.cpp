@@ -177,9 +177,10 @@ void Iteration::Leapfrog(CSWM &model) {
         timenow = n * DT;
 
         // calculate
-        ph_pt(model);
-        pu_pt(model);
-        pv_pt(model);
+        // ph_pt(model);
+        // pu_pt(model);
+        // pv_pt(model);
+        threading(model);   
         model.BoundaryProcess(model);
         model.ExtrapolationBoundary(model);
         model.BoundaryTransform(model);
@@ -214,4 +215,13 @@ void Iteration::Leapfrog(CSWM &model) {
         }
     }
     return;
+}
+
+void Iteration::threading(CSWM &model) {
+    std::thread t1(std::bind(&Iteration::ph_pt, model));
+    std::thread t2(std::bind(&Iteration::pu_pt, model));
+    std::thread t3(std::bind(&Iteration::pv_pt, model));
+    t1.join();
+    t2.join();
+    t3.join();
 }

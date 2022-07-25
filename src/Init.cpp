@@ -53,7 +53,7 @@ void Init::Init2d(CSWM & model) {
 
                 #ifdef Geostrophy
                     // model.cswm[p].hp[i][j] = GeostrophyH(model.cswm[p].lon[i][j], model.cswm[p].lat[i][j]);
-                    model.cswm[p].hp[i][j] = GetH(model.cswm[p].lon[i][j], model.cswm[p].lat[i][j]) / 100.;
+                    model.cswm[p].hp[i][j] = GetH(model.cswm[p].lon[i][j], model.cswm[p].lat[i][j]);
                     model.cswm[p].up[i][j] = 0.;
                     model.cswm[p].vp[i][j] = 0.;
                 #endif

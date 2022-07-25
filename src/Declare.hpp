@@ -1,5 +1,7 @@
 #include <iostream>
 #include <cmath>
+#include <ctime>
+#include <thread>
 #include "Const.hpp"
 
 class CSWM {
@@ -49,4 +51,5 @@ class CSWM {
         static double ConvertBU2AVPatch2Patch(CSWM &, int, int, int, int, int, int);
         static double ConvertBV2AUPatch2Patch(CSWM &, int, int, int, int, int, int);
         static void ExtrapolationBoundary(CSWM &);
+        static void BoundaryWindInterpolation(CSWM &);
 };

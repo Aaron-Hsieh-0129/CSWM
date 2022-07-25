@@ -300,6 +300,12 @@ CSWM::CSWM() {
             }
         }
     }
+
+    for (int idx = 0; idx < NX; idx++) {
+        std::cout << cswm[0].lat_u[NX-2][idx] << " " << cswm[3].lat_u[0][idx];
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
 }
 
 void CSWM::BoundaryProcess(CSWM &model) {
@@ -833,6 +839,9 @@ void CSWM::BoundaryTransform(CSWM &model) {
     return;
 }
 
+void CSWM::BoundaryWindInterpolation(CSWM &model) {
+    return;
+}
 
 double CSWM::ConvertUPatch2Sphere(CSWM &model, int p, int i, int j) {
     return (model.gUpper_u[i][j][0] * model.cswm[p].A_u[i][j][0] + model.gUpper_u[i][j][1] * model.cswm[p].A_u[i][j][2]) * model.cswm[p].u[i][j] + 
